@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pharmabridge-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pharmabridge
+      POSTGRES_PASSWORD: pharmabridge_dev
+      POSTGRES_DB: pharmabridge
+    ports:
+      - "5547:5432"
+    volumes:
+      - pharmabridge_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pharmabridge -d pharmabridge"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pharmabridge_pgdata:

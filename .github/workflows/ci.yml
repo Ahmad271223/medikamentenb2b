@@ -1,0 +1,59 @@
+# CI per docs/architecture/L-infrastructure-plan.md:
+# install → typecheck → lint → unit tests → migrations → seed → integration tests → build.
+# E2E (Playwright) runs locally / in a scheduled job for now: `npm run test:e2e`.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: pharmabridge
+          POSTGRES_PASSWORD: pharmabridge_ci
+          POSTGRES_DB: pharmabridge
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pharmabridge -d pharmabridge"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://pharmabridge:pharmabridge_ci@localhost:5432/pharmabridge?schema=public
+      APP_URL: http://localhost:3000
+      STORAGE_DIR: ./var/storage
+      MAX_UPLOAD_MB: "25"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npx prisma migrate deploy
+      - run: npm run db:seed
+      - run: npm run test:integration
+      - run: npm run build
+
+  audit:
+    # Report-only: dependency findings are triaged, not auto-blocking.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm audit --omit=dev

@@ -30,8 +30,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — .env.example is committed as documentation
 .env*
+!.env.example
+
+# document vault (local storage adapter)
+/var/
+
+# playwright
+/test-results/
+/playwright-report/
 
 # vercel
 .vercel
