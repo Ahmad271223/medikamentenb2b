@@ -52,6 +52,8 @@ Routes are locale-prefixed: `/{de|en|ar}/...` (de = default). Status: ✅ built 
 | `/app/compliance/countries` | Countries: trade enablement (gated), readiness scores with visible components | ✅ M3 |
 | `/app/compliance/recalls` | Recall management (create → cascade, resolve) | ✅ M3 |
 | `/app/compliance/sanctions` | Sanctions screening workflow (manual provider) | ✅ M3 |
+| `/app/compliance/pricing` | Sourced pricing references (analyst entry) | ✅ M5 |
+| `/app/compliance/shortages` | Sourced shortage signals (analyst entry) | ✅ M5 |
 
 ## Admin (`/app/admin/...`, PLATFORM_ADMIN)
 | Route | Screen | Status |
@@ -62,3 +64,4 @@ Routes are locale-prefixed: `/{de|en|ar}/...` (de = default). Status: ✅ built 
 | `/app/admin/products` | Product master curation | ✅ (list) |
 | `/app/admin/audit` | Audit log viewer (entity/action filters) | ✅ |
 | `/app/admin/config` | Fees, buffers, thresholds, exclusion lists (typed editor, audited) | ✅ M3 |
+| `/app/admin/analytics` | Platform analytics (§46) with reference-backed savings | ✅ M5 |

@@ -56,8 +56,14 @@ Deferred: sanctions list-provider API adapter, EUDRA-GMDP license cross-check wo
 - [x] **Acceptance integration-tested** (16 integration tests total): full §70 lifecycle OFFER_ACCEPTED→…→SETTLED as one scripted flow, incl. blocked dispatch on bad ETA, party guards (buyer cannot dispatch, seller cannot confirm receipt), and exact payout/invoice/inventory assertions
 Deferred (founder: "erstmal ohne Chat"): deal-room chat + tasks, INVITE_ONLY invites, import-permit tracking UI (model + guard exist; permits verified via compliance), dispute resolution UI.
 
-## M5 — Intelligence
-Pricing references (licensed sources only), shortage signal ingestion (lawful feeds), recommendation engine, analytics dashboards (§46), economic value model surfaced per deal (§18).
+## M5 — Intelligence ✅ (delivered)
+- [x] Platform analytics (§46) from real aggregates: GMV, revenue, packs redistributed (short-dated share as the labeled waste-avoided estimate), avg. hours to settlement / listing→match, match conversion, country/product GMV
+- [x] §18 economic value model on every transaction: seller recovery, platform revenue, buyer landed cost — **buyer savings only against a sourced pricing reference, otherwise "insufficient pricing data"**
+- [x] Pricing references and shortage signals: analyst-entered with MANDATORY named source (+URL, confidence); no scraping, no fabricated market data
+- [x] Buyer-side dashboard (§34): active RFQs, matches, open negotiations, incoming shipments, settled spend
+- [x] Deal-room chat (deferred from M4, now delivered): per-transaction message thread for both parties + platform compliance, notifications, party-guarded (integration-tested)
+- [x] Acceptance integration-tested (19 integration tests total)
+Deferred: recommendation engine beyond matching, licensed price-feed adapters, INVITE_ONLY invites, dispute-resolution UI.
 
 ## M6 — Enterprise
 ERP integrations (SAP/Dynamics adapters), public API + API keys + webhooks, SSO (OIDC/SAML), advanced reporting, data residency options.

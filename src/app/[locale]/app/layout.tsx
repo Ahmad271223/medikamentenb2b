@@ -74,6 +74,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/compliance/countries', label: t('nav.countries') },
         { href: '/app/compliance/recalls', label: t('nav.recalls') },
         { href: '/app/compliance/sanctions', label: t('nav.sanctions') },
+        { href: '/app/compliance/pricing', label: t('nav.pricing') },
+        { href: '/app/compliance/shortages', label: t('nav.shortages') },
         { href: '/app/transactions', label: t('nav.transactions') },
       ],
     });
@@ -83,6 +85,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       label: t('nav.adminSection'),
       links: [
         { href: '/app/admin', label: t('nav.admin') },
+        { href: '/app/admin/analytics', label: t('nav.analytics') },
         { href: '/app/admin/organizations', label: t('nav.organizations') },
         { href: '/app/admin/users', label: t('nav.users') },
         { href: '/app/admin/config', label: t('nav.config') },

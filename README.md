@@ -63,7 +63,7 @@ messages/                 i18n catalogs
 
 ## Status
 
-**M1 — Foundation, M2 — Marketplace, M3 — Compliance operations, M4 — Transaction execution: complete** (deal-room chat deferred by founder decision).
+**M1 — Foundation, M2 — Marketplace, M3 — Compliance operations, M4 — Transaction execution, M5 — Intelligence: complete**, including the deal-room chat, platform analytics with reference-backed savings, sourced pricing/shortage data entry, buyer dashboard — plus hardening: **Next 16** (proxy convention, clears the sharp audit findings), GitHub Actions CI, and 3 Playwright E2E journeys.
 M4 added: transaction detail with role-based actions, the documents-required loop with human document verification, a payments abstraction behind a provider interface (explicitly-labeled MANUAL_DEMO provider — no real funds; licensed provider = founder decision #2), shipments with customs milestones and temperature logs (exact excursion detection), **dispatch re-checks the destination's current verified shelf-life rule against the actual ETA**, and settlement on buyer confirmation (payment released, payout executed, invoices written, inventory booked reserved→sold).
 
 Tests: `npm test` (114 unit) · `npm run test:integration` (16 acceptance tests against Postgres — M2+M3+M4 criteria, including the full §70 lifecycle to SETTLED).

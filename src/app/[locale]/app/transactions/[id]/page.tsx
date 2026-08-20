@@ -10,6 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge, toneForStatus } from '@/components/ui/badge';
 import { TxActions, DocVerifyButtons } from '@/components/forms/tx-actions';
 import { DocumentUploadForm } from '@/components/forms/document-upload-form';
+import { DealChatForm } from '@/components/forms/deal-chat-form';
+import { dealValueModel } from '@/server/analytics-service';
+import { listMessages } from '@/server/chat-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +63,10 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 
   const shipment = tx.shipments[0] ?? null;
   const canVerifyDocs = hasPermission(actor, 'document:verify');
+  const [valueModel, messages] = await Promise.all([
+    dealValueModel(tx.id),
+    listMessages(user.org?.id ?? null, isPlatform, tx.id),
+  ]);
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -237,6 +244,78 @@ export default async function TransactionDetailPage({ params }: { params: Promis
           </CardContent>
         </Card>
       ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('analytics.savingsTitle')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-4">
+            <div>
+              <dt className="text-slate-500">{t('transactions.payout')}</dt>
+              <dd className="font-medium tabular-nums">{formatMoney(valueModel.sellerRecovery, tx.currency, locale)}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">{t('analytics.revenue')}</dt>
+              <dd className="font-medium tabular-nums">{formatMoney(valueModel.platformRevenue, tx.currency, locale)}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">{t('transactions.landed')}</dt>
+              <dd className="font-medium tabular-nums">{formatMoney(valueModel.buyerLandedCost, tx.currency, locale)}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">{t('buyerDash.savings')}</dt>
+              <dd className="font-medium tabular-nums">
+                {valueModel.estimatedBuyerSavings !== null ? (
+                  formatMoney(valueModel.estimatedBuyerSavings, tx.currency, locale)
+                ) : (
+                  <span className="text-slate-400">{t('analytics.insufficient')}</span>
+                )}
+              </dd>
+            </div>
+          </dl>
+          {valueModel.referenceSource ? (
+            <p className="mt-2 text-xs text-slate-400">
+              {t('pricing.source')}: {valueModel.referenceSource.name} · {valueModel.referenceSource.price} {tx.currency} · {valueModel.referenceSource.confidence}
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('chat.title')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {messages.length === 0 ? (
+            <p className="text-sm text-slate-400">{t('chat.empty')}</p>
+          ) : (
+            <ol className="max-h-72 space-y-2 overflow-y-auto">
+              {messages.map((m) => {
+                const mine = user.org && m.orgId === user.org.id;
+                return (
+                  <li key={m.id} className={mine ? 'text-end' : 'text-start'}>
+                    <span
+                      className={
+                        mine
+                          ? 'inline-block max-w-[85%] rounded-lg bg-brand-700 px-3 py-2 text-sm text-white'
+                          : 'inline-block max-w-[85%] rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-800'
+                      }
+                    >
+                      {m.body}
+                    </span>
+                    <span className="block text-[10px] text-slate-400">
+                      {m.org?.legalName ?? t(`status.platformRole.${m.authorUser.platformRole ?? 'COMPLIANCE_OFFICER'}`)} ·{' '}
+                      {m.authorUser.firstName} · {formatDateTime(m.createdAt, locale)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+          <DealChatForm transactionId={tx.id} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
