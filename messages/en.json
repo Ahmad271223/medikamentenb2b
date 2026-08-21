@@ -164,6 +164,26 @@
     "deleteButton": "Anonymize account irreversibly",
     "platformNote": "Platform accounts (admin/compliance/analyst) are managed by the platform admin."
   },
+  "enterprise": {
+    "apiKeysTitle": "API keys (ERP access)",
+    "apiKeysNote": "Machine access for ERP integrations: Authorization: Bearer pbk_… — every key carries a role and is scoped to your organization. The key is shown exactly once.",
+    "keyRole": "Key role",
+    "createKey": "Create key",
+    "tokenOnce": "Copy now — this key will never be shown again:",
+    "revoke": "Revoke",
+    "revoked": "Revoked",
+    "webhooksTitle": "Webhooks",
+    "webhooksNote": "Signed event deliveries (X-PB-Signature: sha256=HMAC over the body). The secret is shown exactly once.",
+    "createWebhook": "Create webhook",
+    "secretOnce": "Copy now — this secret will never be shown again:",
+    "lastDeliveries": "Recent deliveries",
+    "invitesTitle": "Invitations (invite-only listings)",
+    "inviteListing": "Listing",
+    "inviteBuyer": "Buyer organization",
+    "invite": "Invite",
+    "invited": "Invited — the organization has been notified.",
+    "alreadyInvited": "Already invited."
+  },
   "legal": {
     "privacyTitle": "Privacy policy",
     "imprintTitle": "Legal notice",
@@ -421,7 +441,11 @@
     "invoices": "Invoices",
     "paymentsTitle": "Payments",
     "payoutTitle": "Payout",
-    "queueHint": "Approval/rejection happens in the review queue."
+    "queueHint": "Approval/rejection happens in the review queue.",
+    "disputeReason": "Dispute reason (required)",
+    "openDispute": "Open dispute",
+    "resolveSettle": "Resolve: settle",
+    "resolveReject": "Resolve: reverse (refund)"
   },
   "shipments": {
     "title": "Shipments",

@@ -79,12 +79,16 @@ export async function nextInvoiceNumber(
  * writes both invoices, books inventory (reserved → sold), and settles the
  * transaction — all in one database transaction, fully audited.
  */
-export async function settleTransaction(actorUserId: string | null, transactionId: string) {
+export async function settleTransaction(
+  actorUserId: string | null,
+  transactionId: string,
+  actor: 'SYSTEM' | 'COMPLIANCE_OFFICER' = 'SYSTEM',
+) {
   const tx = await prisma.transaction.findUniqueOrThrow({
     where: { id: transactionId },
     include: { payments: true, batch: { include: { position: true } } },
   });
-  const step = canTransition(tx.state, 'SETTLED', 'SYSTEM');
+  const step = canTransition(tx.state, 'SETTLED', actor);
   if (!step.allowed) throw new ApiError('CONFLICT', 409, step.code);
 
   const payment = tx.payments.find((p) => p.state === 'AUTHORIZED');
@@ -154,7 +158,7 @@ export async function settleTransaction(actorUserId: string | null, transactionI
         transactionId: tx.id,
         fromState: tx.state,
         toState: 'SETTLED',
-        actorType: 'SYSTEM',
+        actorType: actor === 'COMPLIANCE_OFFICER' ? 'COMPLIANCE' : 'SYSTEM',
         actorUserId,
       },
     });

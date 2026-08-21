@@ -21,8 +21,14 @@ async function matchPair(
   if (listing.sellerOrgId === demand.buyerOrgId) return false;
 
   // Visibility gate mirrors the marketplace: restricted listings never match
-  // demands from countries outside their allow-list.
-  if (listing.visibility === 'INVITE_ONLY' || listing.visibility === 'PRIVATE') return false;
+  // demands their buyer could not see.
+  if (listing.visibility === 'PRIVATE') return false;
+  if (listing.visibility === 'INVITE_ONLY') {
+    const invite = await prisma.listingInvite.findUnique({
+      where: { listingId_buyerOrgId: { listingId: listing.id, buyerOrgId: demand.buyerOrgId } },
+    });
+    if (!invite) return false;
+  }
   if (
     listing.visibility === 'COUNTRY_RESTRICTED' &&
     !listing.restrictedToCountryIds.includes(demand.destinationCountryId)

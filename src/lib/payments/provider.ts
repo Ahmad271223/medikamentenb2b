@@ -13,6 +13,8 @@ export interface PaymentProvider {
   authorize(input: { transactionId: string; amount: string; currency: string }): Promise<AuthorizeResult>;
   /** Release the authorized funds to settlement (after buyer acceptance). */
   release(input: { providerRef: string }): Promise<{ state: 'RELEASED' | 'FAILED' }>;
+  /** Return authorized funds to the buyer (dispute resolved against the seller). */
+  refund(input: { providerRef: string }): Promise<{ state: 'REFUNDED' | 'FAILED' }>;
 }
 
 /**
@@ -30,6 +32,10 @@ class ManualDemoProvider implements PaymentProvider {
 
   async release(): Promise<{ state: 'RELEASED' }> {
     return { state: 'RELEASED' };
+  }
+
+  async refund(): Promise<{ state: 'REFUNDED' }> {
+    return { state: 'REFUNDED' };
   }
 }
 

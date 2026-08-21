@@ -150,6 +150,44 @@ export async function activateListing(listingId: string, actorUserId: string): P
   await runMatchingForListing(listingId);
 }
 
+/** INVITE_ONLY listings become visible to explicitly invited buyer orgs. */
+export async function inviteBuyerToListing(user: CurrentUser, listingId: string, buyerOrgId: string) {
+  const listing = await prisma.listing.findFirst({
+    where: { id: listingId, sellerOrgId: user.org!.id, deletedAt: null },
+  });
+  if (!listing) throw new ApiError('NOT_FOUND', 404, 'LISTING_NOT_FOUND');
+  if (listing.visibility !== 'INVITE_ONLY') throw new ApiError('CONFLICT', 409, 'LISTING_NOT_INVITE_ONLY');
+
+  const buyerOrg = await prisma.organization.findFirst({
+    where: { id: buyerOrgId, deletedAt: null, kind: { in: ['BUYER', 'HYBRID'] }, status: 'VERIFIED' },
+  });
+  if (!buyerOrg) throw new ApiError('VALIDATION_ERROR', 400, 'BUYER_ORG_NOT_ELIGIBLE');
+
+  const existing = await prisma.listingInvite.findUnique({
+    where: { listingId_buyerOrgId: { listingId, buyerOrgId } },
+  });
+  if (existing) return { inviteId: existing.id, alreadyInvited: true };
+
+  const invite = await prisma.listingInvite.create({
+    data: { listingId, buyerOrgId, createdById: user.id },
+  });
+  await writeAudit({
+    actorUserId: user.id,
+    orgId: user.org!.id,
+    action: 'LISTING_INVITE_CREATED',
+    entityType: 'ListingInvite',
+    entityId: invite.id,
+    newValue: { listingId, buyerOrgId },
+  });
+  const { notifyOrgOwners } = await import('./notify');
+  await notifyOrgOwners(buyerOrgId, {
+    type: 'LISTING_INVITE',
+    title: 'Einladung zu einem privaten Angebot / Invitation to a private listing',
+    data: { listingId },
+  });
+  return { inviteId: invite.id, alreadyInvited: false };
+}
+
 export async function withdrawListing(user: CurrentUser, listingId: string): Promise<void> {
   const listing = await prisma.listing.findFirst({
     where: { id: listingId, sellerOrgId: user.org!.id, deletedAt: null },

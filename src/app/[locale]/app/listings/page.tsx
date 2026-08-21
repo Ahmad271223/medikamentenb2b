@@ -8,6 +8,7 @@ import { Badge, toneForStatus } from '@/components/ui/badge';
 import { Table, TBody, Td, Th, THead, Tr } from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/kpi';
 import { ListingForm, type BatchOption } from '@/components/forms/listing-form';
+import { ListingInviteForm } from '@/components/forms/invite-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,18 @@ export default async function ListingsPage() {
     }),
     prisma.country.findMany({ where: { isDestinationEnabled: true }, orderBy: { id: 'asc' } }),
   ]);
+
+  const inviteOnlyListings = listings.filter(
+    (l) => l.visibility === 'INVITE_ONLY' && ['DRAFT', 'PENDING_COMPLIANCE', 'ACTIVE', 'PAUSED'].includes(l.status),
+  );
+  const buyerOrgs =
+    inviteOnlyListings.length > 0
+      ? await prisma.organization.findMany({
+          where: { kind: { in: ['BUYER', 'HYBRID'] }, status: 'VERIFIED', deletedAt: null, id: { not: user.org.id } },
+          select: { id: true, legalName: true, countryId: true },
+          orderBy: { legalName: 'asc' },
+        })
+      : [];
 
   // Verdict summary per listing, grouped in one query.
   const verdictRows = await prisma.listingEligibility.groupBy({
@@ -122,6 +135,23 @@ export default async function ListingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {inviteOnlyListings.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('enterprise.invitesTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ListingInviteForm
+              listings={inviteOnlyListings.map((l) => ({
+                id: l.id,
+                label: `${l.product.inn} · ${l.batch.lotNumber}`,
+              }))}
+              buyerOrgs={buyerOrgs.map((o) => ({ id: o.id, label: `${o.legalName} (${o.countryId})` }))}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
 
       {batchOptions.length > 0 ? (
         <Card>

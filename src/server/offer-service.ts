@@ -8,6 +8,7 @@ import { computeDealEconomics } from '@/domain/economics/economics';
 import { canTransition } from '@/domain/transactions/state-machine';
 import type { EligibilityVerdict } from '@/domain/eligibility/types';
 import { notifyOrgOwners } from './notify';
+import { emitWebhookEvent } from './webhook-service';
 import type { CurrentUser } from '@/lib/auth/current';
 
 export interface SubmitOfferInput {
@@ -42,9 +43,15 @@ export async function submitOffer(user: CurrentUser, input: SubmitOfferInput) {
   if (listing.batch.recallStatus !== 'NONE' || listing.batch.quarantineStatus === 'QUARANTINED') {
     throw new ApiError('CONFLICT', 409, 'BATCH_BLOCKED');
   }
-  const visibleToBuyer =
+  let visibleToBuyer =
     listing.visibility === 'PUBLIC_VERIFIED' ||
     (listing.visibility === 'COUNTRY_RESTRICTED' && listing.restrictedToCountryIds.includes(buyerOrg.countryId));
+  if (!visibleToBuyer && listing.visibility === 'INVITE_ONLY') {
+    const invite = await prisma.listingInvite.findUnique({
+      where: { listingId_buyerOrgId: { listingId: listing.id, buyerOrgId } },
+    });
+    visibleToBuyer = invite !== null;
+  }
   if (!visibleToBuyer) throw new ApiError('FORBIDDEN', 403, 'VISIBILITY_RESTRICTED');
 
   // The prohibited-match rule, enforced server-side (spec §68/§71).
@@ -99,6 +106,13 @@ export async function submitOffer(user: CurrentUser, input: SubmitOfferInput) {
     body: `${input.quantity} × ${input.unitPrice} ${listing.currency}`,
     data: { negotiationId: negotiation.id, offerId: offer.id },
   });
+  void emitWebhookEvent([listing.sellerOrgId], 'offer.received', {
+    offerId: offer.id,
+    listingId: listing.id,
+    quantity: input.quantity,
+    unitPrice: input.unitPrice,
+    currency: listing.currency,
+  }).catch(() => undefined);
 
   return { negotiationId: negotiation.id, offerId: offer.id };
 }
@@ -315,6 +329,12 @@ export async function respondToOffer(user: CurrentUser, offerId: string, input: 
       data: { transactionId: transaction.id },
     }),
   ]);
+
+  void emitWebhookEvent([negotiation.sellerOrgId, negotiation.buyerOrgId], 'offer.accepted', {
+    offerId: offer.id,
+    transactionId: transaction.id,
+    state: 'COMPLIANCE_REVIEW',
+  }).catch(() => undefined);
 
   return { status: 'ACCEPTED' as const, transactionId: transaction.id };
 }

@@ -24,11 +24,12 @@ export async function searchMarketplace(orgId: string, params: MarketplaceQuery)
       status: 'ACTIVE',
       deletedAt: null,
       // Visibility gate: PUBLIC to all verified buyers; COUNTRY_RESTRICTED only
-      // to buyers in an allowed destination; INVITE_ONLY/PRIVATE never surface
-      // in search (invites arrive with the deal-room work, M4).
+      // to buyers in an allowed destination; INVITE_ONLY only to explicitly
+      // invited buyer orgs; PRIVATE never surfaces in search.
       OR: [
         { visibility: 'PUBLIC_VERIFIED' },
         { visibility: 'COUNTRY_RESTRICTED', restrictedToCountryIds: { has: org.countryId } },
+        { visibility: 'INVITE_ONLY', invites: { some: { buyerOrgId: org.id } } },
       ],
       sellerOrgId: { not: org.id },
       eligibilities: {

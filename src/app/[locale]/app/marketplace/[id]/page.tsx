@@ -30,6 +30,7 @@ export default async function MarketplaceDetailPage({ params }: { params: Promis
       batch: true,
       sellerOrg: true,
       eligibilities: { where: { countryId: org.countryId }, include: { country: true } },
+      invites: { where: { buyerOrgId: org.id } },
     },
   });
   if (!listing) notFound();
@@ -38,7 +39,8 @@ export default async function MarketplaceDetailPage({ params }: { params: Promis
   const visibleToBuyer =
     listing.sellerOrgId === org.id ||
     listing.visibility === 'PUBLIC_VERIFIED' ||
-    (listing.visibility === 'COUNTRY_RESTRICTED' && listing.restrictedToCountryIds.includes(org.countryId));
+    (listing.visibility === 'COUNTRY_RESTRICTED' && listing.restrictedToCountryIds.includes(org.countryId)) ||
+    (listing.visibility === 'INVITE_ONLY' && listing.invites.length > 0);
   if (!visibleToBuyer) notFound();
 
   const eligibility = listing.eligibilities[0] ?? null;

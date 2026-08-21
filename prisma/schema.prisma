@@ -413,6 +413,9 @@ model User {
   documentsUploaded    Document[]
   sanctionsChecks      SanctionsCheck[]
   dealMessages         DealMessage[]
+  apiKeysCreated       ApiKey[]
+  webhooksCreated      WebhookEndpoint[]
+  listingInvitesCreated ListingInvite[]
 
   @@index([platformRole])
 }
@@ -491,6 +494,9 @@ model Organization {
   salesTransactions Transaction[]       @relation("TransactionSeller")
   purchaseTransactions Transaction[]    @relation("TransactionBuyer")
   dealMessages     DealMessage[]
+  apiKeys          ApiKey[]
+  webhookEndpoints WebhookEndpoint[]
+  listingInvites   ListingInvite[]      @relation("ListingInviteBuyer")
 
   @@index([countryId])
   @@index([status])
@@ -898,6 +904,7 @@ model Listing {
   negotiations  Negotiation[]
   transactions  Transaction[]
   reviews       ComplianceReview[]
+  invites       ListingInvite[]
 
   @@index([sellerOrgId])
   @@index([status])
@@ -1423,6 +1430,71 @@ model Notification {
   createdAt DateTime            @default(now())
 
   @@index([userId, readAt])
+}
+
+model ApiKey {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  orgId       String       @db.Uuid
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name        String
+  prefix      String
+  keyHash     String       @unique
+  role        OrgRole
+  createdById String       @db.Uuid
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime     @default(now())
+
+  @@index([orgId])
+}
+
+model WebhookEndpoint {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  orgId       String       @db.Uuid
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  url         String
+  secret      String
+  events      String[]
+  active      Boolean      @default(true)
+  createdById String       @db.Uuid
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+  revokedAt   DateTime?
+
+  deliveries WebhookDelivery[]
+
+  @@index([orgId])
+}
+
+model WebhookDelivery {
+  id           String          @id @default(uuid(7)) @db.Uuid
+  endpointId   String          @db.Uuid
+  endpoint     WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  event        String
+  payload      Json
+  status       String          @default("PENDING") // PENDING | SUCCESS | FAILED
+  attempts     Int             @default(0)
+  responseCode Int?
+  lastError    String?
+  createdAt    DateTime        @default(now())
+  deliveredAt  DateTime?
+
+  @@index([endpointId, createdAt])
+}
+
+model ListingInvite {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  listingId   String       @db.Uuid
+  listing     Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerOrgId  String       @db.Uuid
+  buyerOrg    Organization @relation("ListingInviteBuyer", fields: [buyerOrgId], references: [id], onDelete: Cascade)
+  createdById String       @db.Uuid
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+
+  @@unique([listingId, buyerOrgId])
+  @@index([buyerOrgId])
 }
 
 model DealMessage {

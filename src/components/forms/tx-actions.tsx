@@ -59,9 +59,12 @@ export function TxActions({
   const canDispatch = isSeller && shipment?.status === 'BOOKED' && state === 'READY_FOR_PICKUP';
   const canMilestone = (isSeller || isOfficer) && shipment && ['IN_TRANSIT', 'CUSTOMS'].includes(state);
   const canConfirm = isBuyer && state === 'DELIVERED';
+  const canDispute = (isBuyer || isSeller) && ['DELIVERED', 'BUYER_ACCEPTED'].includes(state);
+  const canResolveDispute = isOfficer && state === 'DISPUTE';
 
   const nothing =
-    !canRequestDocs && !canResubmit && !canAuthorize && !canBook && !canDispatch && !canMilestone && !canConfirm;
+    !canRequestDocs && !canResubmit && !canAuthorize && !canBook && !canDispatch && !canMilestone && !canConfirm &&
+    !canDispute && !canResolveDispute;
   if (nothing) return null;
 
   return (
@@ -185,6 +188,45 @@ export function TxActions({
         <Button variant="success" disabled={busy} onClick={() => call(`/api/v1/transactions/${txId}/confirm-receipt`)}>
           {t('confirmReceipt')}
         </Button>
+      ) : null}
+
+      {canDispute ? (
+        <div className="flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
+          <div className="min-w-64 flex-1">
+            <Label>{t('disputeReason')}</Label>
+            <Input value={docNote} onChange={(e) => setDocNote(e.target.value)} />
+          </div>
+          <Button
+            variant="danger"
+            disabled={busy || docNote.trim().length < 3}
+            onClick={() => call(`/api/v1/transactions/${txId}/dispute`, { note: docNote })}
+          >
+            {t('openDispute')}
+          </Button>
+        </div>
+      ) : null}
+
+      {canResolveDispute ? (
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="min-w-64 flex-1">
+            <Label>{t('requestDocsNote')}</Label>
+            <Input value={docNote} onChange={(e) => setDocNote(e.target.value)} />
+          </div>
+          <Button
+            variant="success"
+            disabled={busy || docNote.trim().length < 3}
+            onClick={() => call(`/api/v1/transactions/${txId}/resolve-dispute`, { outcome: 'SETTLED', note: docNote })}
+          >
+            {t('resolveSettle')}
+          </Button>
+          <Button
+            variant="danger"
+            disabled={busy || docNote.trim().length < 3}
+            onClick={() => call(`/api/v1/transactions/${txId}/resolve-dispute`, { outcome: 'REJECTED', note: docNote })}
+          >
+            {t('resolveReject')}
+          </Button>
+        </div>
       ) : null}
 
       <FieldError>{error}</FieldError>

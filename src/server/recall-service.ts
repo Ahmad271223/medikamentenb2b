@@ -3,6 +3,7 @@ import { ApiError } from '@/lib/errors';
 import { writeAudit } from '@/lib/audit/audit';
 import { canTransition, TERMINAL_STATES } from '@/domain/transactions/state-machine';
 import { notifyOrgOwners } from './notify';
+import { emitWebhookEvent } from './webhook-service';
 
 // Recall management (spec §24): a recalled batch must become impossible to
 // trade IMMEDIATELY — listings block, in-flight transactions freeze, affected
@@ -122,6 +123,12 @@ export async function createRecall(userId: string, input: CreateRecallInput) {
       }),
     ),
   );
+
+  void emitWebhookEvent([...affectedOrgIds], 'recall.issued', {
+    recallId: result.recall.id,
+    scope: input.scope,
+    batchIds: input.batchIds,
+  }).catch(() => undefined);
 
   return {
     recallId: result.recall.id,

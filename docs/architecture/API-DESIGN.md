@@ -6,7 +6,7 @@
 - Error codes: `VALIDATION_ERROR` (400), `UNAUTHENTICATED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `RATE_LIMITED` (429), `INTERNAL` (500). Messages are code-keyed for i18n.
 - Every handler: (1) zod-parse input, (2) resolve session, (3) RBAC permission check with org scoping, (4) service call, (5) audit where relevant. No exceptions.
 - Mutations validate the `Origin` header (CSRF defense alongside SameSite cookies).
-- AuthN: session cookie (browser). Org-scoped API keys for ERP clients arrive in Phase 6 (`Authorization: Bearer`), same permission model.
+- AuthN: session cookie (browser) **or** org-scoped API key (`Authorization: Bearer pbk_…`) — delivered: keys carry an org role (COMMERCIAL/INVENTORY/VIEWER), are hashed at rest, rate-limited per key, revocable in settings; the identical server-side permission matrix applies.
 
 ## Endpoints (M1 — implemented)
 | Method & path | Purpose | Permission |
@@ -26,8 +26,8 @@
 ## Endpoints (M2–M4 — specified)
 Listings (`/listings`, `/listings/:id/publish`, `/listings/:id/eligibility`), marketplace search (`/marketplace/search` — always eligibility-filtered by caller's org country), demands (`/demands`), matches (`/matches`), offers (`/negotiations`, `/offers`, `/offers/:id/accept|reject|counter`), transactions (`/transactions/:id/transition` — guard-checked), shipments, payments (provider webhooks under `/webhooks/payments/:provider` with signature verification).
 
-## Webhooks (outbound, Phase 4+)
-Event types: `inventory.updated`, `offer.received`, `offer.accepted`, `transaction.state_changed`, `shipment.event`, `license.expiring`, `recall.issued`. Signed (HMAC-SHA256, per-endpoint secret), retried with backoff, delivery log persisted.
+## Webhooks (outbound — delivered)
+Event types: `offer.received`, `offer.accepted`, `transaction.state_changed`, `shipment.event`, `recall.issued` (`inventory.updated`, `license.expiring` planned). Signed `X-PB-Signature: sha256=<HMAC-SHA256(secret, body)>`, per-endpoint secret shown once, inline delivery with one retry and a persistent delivery log (queue-backed delivery moves to BullMQ/Redis with scale, PART L). Managed in settings; endpoints revocable.
 
 ## Versioning
 Additive changes within v1; breaking changes open `/api/v2` with overlap window. Response shapes are typed and exported for client generation.

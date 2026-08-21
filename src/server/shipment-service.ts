@@ -7,6 +7,7 @@ import { calculateShelfLife } from '@/domain/shelf-life/shelf-life';
 import { evaluateShelfLifeRule } from '@/domain/shelf-life/rules';
 import type { ShelfLifeRulePayload } from '@/domain/shelf-life/types';
 import { notifyOrgOwners } from './notify';
+import { emitWebhookEvent } from './webhook-service';
 
 export interface CreateShipmentInput {
   transactionId: string;
@@ -154,6 +155,11 @@ export async function dispatchShipment(userId: string, sellerOrgId: string, ship
     title: 'Sendung unterwegs / Shipment dispatched',
     data: { transactionId: tx.id, shipmentId: shipment.id },
   });
+  void emitWebhookEvent([tx.sellerOrgId, tx.buyerOrgId], 'shipment.event', {
+    shipmentId: shipment.id,
+    transactionId: tx.id,
+    type: 'DISPATCHED',
+  }).catch(() => undefined);
   return { state: 'IN_TRANSIT' as const };
 }
 
@@ -221,6 +227,12 @@ export async function recordShipmentEvent(
       db,
     );
   });
+  void emitWebhookEvent([tx.sellerOrgId, tx.buyerOrgId], 'shipment.event', {
+    shipmentId,
+    transactionId: tx.id,
+    type: input.type,
+    location: input.location ?? null,
+  }).catch(() => undefined);
   return { recorded: input.type, transactionState: targetState ?? tx.state };
 }
 

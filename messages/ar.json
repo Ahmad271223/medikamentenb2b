@@ -164,6 +164,26 @@
     "deleteButton": "تجهيل الحساب نهائياً",
     "platformNote": "حسابات المنصة (الإدارة/الامتثال/المحلل) يديرها مدير المنصة."
   },
+  "enterprise": {
+    "apiKeysTitle": "مفاتيح API (وصول ERP)",
+    "apiKeysNote": "وصول آلي لتكاملات ERP: Authorization: Bearer pbk_… — كل مفتاح يحمل دوراً ومقيَّد بمنشأتك. يُعرض المفتاح مرة واحدة فقط.",
+    "keyRole": "دور المفتاح",
+    "createKey": "إنشاء مفتاح",
+    "tokenOnce": "انسخه الآن — لن يُعرض هذا المفتاح مرة أخرى:",
+    "revoke": "إلغاء",
+    "revoked": "مُلغى",
+    "webhooksTitle": "Webhooks",
+    "webhooksNote": "تسليم أحداث موقَّع (X-PB-Signature: sha256=HMAC على المحتوى). يُعرض السر مرة واحدة فقط.",
+    "createWebhook": "إنشاء Webhook",
+    "secretOnce": "انسخه الآن — لن يُعرض هذا السر مرة أخرى:",
+    "lastDeliveries": "آخر عمليات التسليم",
+    "invitesTitle": "الدعوات (عروض بالدعوة فقط)",
+    "inviteListing": "العرض",
+    "inviteBuyer": "منشأة المشتري",
+    "invite": "دعوة",
+    "invited": "دُعيت — أُخطرت المنشأة.",
+    "alreadyInvited": "مدعوّة سابقاً."
+  },
   "legal": {
     "privacyTitle": "سياسة الخصوصية",
     "imprintTitle": "البيانات القانونية",
@@ -421,7 +441,11 @@
     "invoices": "الفواتير",
     "paymentsTitle": "المدفوعات",
     "payoutTitle": "المستحقات",
-    "queueHint": "الاعتماد/الرفض يتم في قائمة المراجعة."
+    "queueHint": "الاعتماد/الرفض يتم في قائمة المراجعة.",
+    "disputeReason": "سبب النزاع (إلزامي)",
+    "openDispute": "فتح نزاع",
+    "resolveSettle": "قرار: تسوية",
+    "resolveReject": "قرار: إلغاء واسترداد"
   },
   "shipments": {
     "title": "الشحنات",

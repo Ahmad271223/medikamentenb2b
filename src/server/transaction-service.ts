@@ -5,6 +5,7 @@ import { writeAudit } from '@/lib/audit/audit';
 import { canTransition, type TransitionContext } from '@/domain/transactions/state-machine';
 import { notifyOrgOwners } from './notify';
 import { settleTransaction } from './payment-service';
+import { emitWebhookEvent } from './webhook-service';
 
 const SELLER_LICENSES = ['WDA', 'WHOLESALE', 'MANUFACTURING', 'PHARMACY', 'HOSPITAL'];
 const BUYER_LICENSES = ['WDA', 'WHOLESALE', 'IMPORT', 'HOSPITAL', 'PHARMACY'];
@@ -154,6 +155,121 @@ export async function confirmReceipt(userId: string, buyerOrgId: string, transac
   return settled;
 }
 
+/** A party opens a dispute after delivery (spec §19/§60). */
+export async function openDispute(userId: string, partyOrgId: string, transactionId: string, reason: string) {
+  const tx = await prisma.transaction.findUniqueOrThrow({ where: { id: transactionId } });
+  if (tx.sellerOrgId !== partyOrgId && tx.buyerOrgId !== partyOrgId) {
+    throw new ApiError('FORBIDDEN', 403, 'NOT_PARTY');
+  }
+  const actor = tx.sellerOrgId === partyOrgId ? 'SELLER' : 'BUYER';
+  const step = canTransition(tx.state, 'DISPUTE', actor);
+  if (!step.allowed) throw new ApiError('CONFLICT', 409, step.code);
+
+  await prisma.$transaction(async (db) => {
+    await db.transaction.update({ where: { id: tx.id }, data: { state: 'DISPUTE' } });
+    await db.transactionStateEvent.create({
+      data: { transactionId: tx.id, fromState: tx.state, toState: 'DISPUTE', actorType: 'USER', actorUserId: userId, reason },
+    });
+    await db.complianceReview.create({
+      data: { type: 'TRANSACTION', orgId: tx.sellerOrgId, transactionId: tx.id, priority: 85 },
+    });
+    await writeAudit(
+      { actorUserId: userId, orgId: partyOrgId, action: 'DISPUTE_OPENED', entityType: 'Transaction', entityId: tx.id, reason },
+      db,
+    );
+  });
+  const counterparty = tx.sellerOrgId === partyOrgId ? tx.buyerOrgId : tx.sellerOrgId;
+  await notifyOrgOwners(counterparty, {
+    type: 'DISPUTE_OPENED',
+    title: 'Streitfall eröffnet / Dispute opened',
+    body: reason,
+    data: { transactionId: tx.id },
+  });
+  void emitWebhookEvent([tx.sellerOrgId, tx.buyerOrgId], 'transaction.state_changed', {
+    transactionId: tx.id,
+    state: 'DISPUTE',
+  }).catch(() => undefined);
+  return { state: 'DISPUTE' as const };
+}
+
+/**
+ * Officer resolution: SETTLED runs the normal settlement; REJECTED refunds the
+ * buyer via the provider and releases the inventory reservation (documented
+ * assumption for the MVP: goods return to the seller).
+ */
+export async function resolveDispute(
+  officerId: string,
+  transactionId: string,
+  outcome: 'SETTLED' | 'REJECTED',
+  reason: string,
+) {
+  const tx = await prisma.transaction.findUniqueOrThrow({
+    where: { id: transactionId },
+    include: { payments: true, listing: true, batch: { include: { position: true } } },
+  });
+  if (tx.state !== 'DISPUTE') throw new ApiError('CONFLICT', 409, 'TRANSACTION_NOT_IN_DISPUTE');
+
+  if (outcome === 'SETTLED') {
+    const settled = await settleTransaction(officerId, transactionId, 'COMPLIANCE_OFFICER');
+    await writeAudit({
+      actorType: 'COMPLIANCE', actorUserId: officerId, orgId: tx.sellerOrgId,
+      action: 'DISPUTE_RESOLVED_SETTLED', entityType: 'Transaction', entityId: tx.id, reason,
+    });
+    return settled;
+  }
+
+  const step = canTransition('DISPUTE', 'REJECTED', 'COMPLIANCE_OFFICER');
+  if (!step.allowed) throw new ApiError('CONFLICT', 409, step.code);
+
+  const payment = tx.payments.find((p) => p.state === 'AUTHORIZED');
+  if (payment) {
+    const { getPaymentProvider } = await import('@/lib/payments/provider');
+    const refund = await getPaymentProvider().refund({ providerRef: payment.providerRef ?? '' });
+    if (refund.state !== 'REFUNDED') throw new ApiError('CONFLICT', 409, 'REFUND_FAILED');
+  }
+
+  await prisma.$transaction(async (db) => {
+    if (payment) {
+      await db.payment.update({ where: { id: payment.id }, data: { state: 'REFUNDED' } });
+    }
+    if (tx.batch.position) {
+      await db.inventoryPosition.update({
+        where: { id: tx.batch.position.id },
+        data: { reserved: { decrement: tx.quantity } },
+      });
+    }
+    if (tx.listing) {
+      await db.listing.update({
+        where: { id: tx.listing.id },
+        data: {
+          quantityAvailable: { increment: tx.quantity },
+          status: tx.listing.status === 'SOLD_OUT' ? 'ACTIVE' : tx.listing.status,
+        },
+      });
+    }
+    await db.transaction.update({ where: { id: tx.id }, data: { state: 'REJECTED' } });
+    await db.transactionStateEvent.create({
+      data: { transactionId: tx.id, fromState: 'DISPUTE', toState: 'REJECTED', actorType: 'COMPLIANCE', actorUserId: officerId, reason },
+    });
+    await writeAudit(
+      {
+        actorType: 'COMPLIANCE', actorUserId: officerId, orgId: tx.sellerOrgId,
+        action: 'DISPUTE_RESOLVED_REJECTED', entityType: 'Transaction', entityId: tx.id, reason,
+      },
+      db,
+    );
+  });
+  await Promise.all([
+    notifyOrgOwners(tx.sellerOrgId, { type: 'DISPUTE_RESOLVED', title: 'Streitfall entschieden / Dispute resolved', body: reason, data: { transactionId: tx.id } }),
+    notifyOrgOwners(tx.buyerOrgId, { type: 'DISPUTE_RESOLVED', title: 'Streitfall entschieden / Dispute resolved', body: reason, data: { transactionId: tx.id } }),
+  ]);
+  void emitWebhookEvent([tx.sellerOrgId, tx.buyerOrgId], 'transaction.state_changed', {
+    transactionId: tx.id,
+    state: 'REJECTED',
+  }).catch(() => undefined);
+  return { state: 'REJECTED' as const };
+}
+
 export async function applyTransactionDecision(
   transactionId: string,
   decision: 'APPROVED' | 'REJECTED',
@@ -239,4 +355,8 @@ export async function applyTransactionDecision(
     },
     db,
   );
+  void emitWebhookEvent([transaction.sellerOrgId, transaction.buyerOrgId], 'transaction.state_changed', {
+    transactionId,
+    state: decision === 'APPROVED' ? 'READY_FOR_PAYMENT' : 'REJECTED',
+  }).catch(() => undefined);
 }

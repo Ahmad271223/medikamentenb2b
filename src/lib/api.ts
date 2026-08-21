@@ -50,8 +50,18 @@ export function assertSameOrigin(req: NextRequest): void {
 
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
-  if (!user) throw new ApiError('UNAUTHENTICATED', 401, 'Sign-in required');
-  return user;
+  if (user) return user;
+
+  // Machine access: org API keys via Authorization: Bearer pbk_… (spec §38).
+  const { headers } = await import('next/headers');
+  const authHeader = (await headers()).get('authorization');
+  if (authHeader?.startsWith('Bearer ')) {
+    const { resolveApiKey } = await import('@/server/api-key-service');
+    const keyUser = await resolveApiKey(authHeader.slice(7).trim());
+    if (keyUser) return keyUser;
+  }
+
+  throw new ApiError('UNAUTHENTICATED', 401, 'Sign-in required');
 }
 
 /**

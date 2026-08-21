@@ -164,6 +164,26 @@
     "deleteButton": "Konto unwiderruflich anonymisieren",
     "platformNote": "Plattform-Konten (Admin/Compliance/Analyst) werden vom Plattform-Admin verwaltet."
   },
+  "enterprise": {
+    "apiKeysTitle": "API-Schlüssel (ERP-Zugriff)",
+    "apiKeysNote": "Maschinenzugriff für ERP-Integrationen: Authorization: Bearer pbk_… — jeder Schlüssel trägt eine Rolle und ist auf Ihre Organisation begrenzt. Der Schlüssel wird nur einmal angezeigt.",
+    "keyRole": "Rolle des Schlüssels",
+    "createKey": "Schlüssel erstellen",
+    "tokenOnce": "Jetzt kopieren — dieser Schlüssel wird nie wieder angezeigt:",
+    "revoke": "Widerrufen",
+    "revoked": "Widerrufen",
+    "webhooksTitle": "Webhooks",
+    "webhooksNote": "Signierte Ereignis-Zustellungen (X-PB-Signature: sha256=HMAC über den Body). Das Secret wird nur einmal angezeigt.",
+    "createWebhook": "Webhook anlegen",
+    "secretOnce": "Jetzt kopieren — dieses Secret wird nie wieder angezeigt:",
+    "lastDeliveries": "Letzte Zustellungen",
+    "invitesTitle": "Einladungen (nur-auf-Einladung-Angebote)",
+    "inviteListing": "Angebot",
+    "inviteBuyer": "Käufer-Organisation",
+    "invite": "Einladen",
+    "invited": "Eingeladen — die Organisation wurde benachrichtigt.",
+    "alreadyInvited": "Bereits eingeladen."
+  },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",
     "imprintTitle": "Impressum",
@@ -421,7 +441,11 @@
     "invoices": "Rechnungen",
     "paymentsTitle": "Zahlungen",
     "payoutTitle": "Auszahlung",
-    "queueHint": "Freigabe/Ablehnung erfolgt in der Prüf-Warteschlange."
+    "queueHint": "Freigabe/Ablehnung erfolgt in der Prüf-Warteschlange.",
+    "disputeReason": "Streitgrund (Pflicht)",
+    "openDispute": "Streitfall eröffnen",
+    "resolveSettle": "Entscheiden: abrechnen",
+    "resolveReject": "Entscheiden: rückabwickeln (Refund)"
   },
   "shipments": {
     "title": "Versand",

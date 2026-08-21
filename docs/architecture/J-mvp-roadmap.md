@@ -76,8 +76,12 @@ Deferred: recommendation engine beyond matching, licensed price-feed adapters, I
 - [x] Acceptance integration-tested (23 integration tests total)
 Prepared, needs accounts/decisions: Sentry DSN, SMTP provider + AVV, S3 bucket, external pen-test.
 
-## M6 — Enterprise
-ERP integrations (SAP/Dynamics adapters), public API + API keys + webhooks, SSO (OIDC/SAML), advanced reporting, data residency options.
+## M6 — Enterprise 🟡 (core delivered)
+- [x] Organization API keys: `Authorization: Bearer pbk_…`, role-scoped (never above COMMERCIAL/INVENTORY/VIEWER), hashed at rest, shown once, per-key rate limit, revocable — the same RBAC matrix governs humans and machines (integration-tested incl. no-escalation)
+- [x] Outbound webhooks: HMAC-SHA256-signed deliveries (`X-PB-Signature`), event subscription per endpoint (`offer.received`, `offer.accepted`, `transaction.state_changed`, `shipment.event`, `recall.issued`), persistent delivery log with retries — signature verified against a live endpoint in tests
+- [x] Dispute flow: party opens after delivery (prioritized compliance case), officer resolves — settle, or reject with provider refund + reservation release (both paths tested)
+- [x] INVITE_ONLY listings: seller invites verified buyer orgs; enforced in search, detail, offer guard and matching (tested)
+Remaining for full M6: ERP field-mapping adapters (SAP/Dynamics), SSO (OIDC/SAML), advanced reporting, data-residency options, queue-backed webhook delivery (BullMQ/Redis).
 
 ## Working method (every milestone)
 architecture → requirements → data model → regulatory/security implications → implement → tests → run tests → fix → document → proceed.

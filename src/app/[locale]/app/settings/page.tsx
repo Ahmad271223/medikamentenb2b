@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TBody, Td, Th, THead, Tr } from '@/components/ui/table';
 import { MfaCard, PrivacyCard } from '@/components/forms/account-security';
+import { ApiKeysCard, WebhooksCard, type ApiKeyRow, type WebhookRow } from '@/components/forms/enterprise-cards';
+import { toActor } from '@/lib/auth/current';
+import { hasPermission } from '@/lib/authz/permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,13 +17,25 @@ export default async function SettingsPage() {
   const locale = await getLocale();
   const user = (await getCurrentUser())!;
 
-  const [account, members] = await Promise.all([
+  const canManage = user.org ? hasPermission(toActor(user), 'member:manage', { orgId: user.org.id }) : false;
+
+  const [account, members, apiKeys, webhooks] = await Promise.all([
     prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { mfaEnabled: true } }),
     user.org
       ? prisma.organizationMember.findMany({
           where: { orgId: user.org.id },
           include: { user: true },
           orderBy: { createdAt: 'asc' },
+        })
+      : Promise.resolve([]),
+    canManage
+      ? prisma.apiKey.findMany({ where: { orgId: user.org!.id }, orderBy: { createdAt: 'desc' } })
+      : Promise.resolve([]),
+    canManage
+      ? prisma.webhookEndpoint.findMany({
+          where: { orgId: user.org!.id },
+          include: { deliveries: { orderBy: { createdAt: 'desc' }, take: 3 } },
+          orderBy: { createdAt: 'desc' },
         })
       : Promise.resolve([]),
   ]);
@@ -71,6 +86,52 @@ export default async function SettingsPage() {
           <MfaCard enabled={account.mfaEnabled} />
         </CardContent>
       </Card>
+
+      {canManage ? (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('enterprise.apiKeysTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ApiKeysCard
+                keys={apiKeys.map(
+                  (k): ApiKeyRow => ({
+                    id: k.id,
+                    name: k.name,
+                    prefix: k.prefix,
+                    role: k.role,
+                    lastUsedAt: k.lastUsedAt?.toISOString() ?? null,
+                    revokedAt: k.revokedAt?.toISOString() ?? null,
+                  }),
+                )}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('enterprise.webhooksTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WebhooksCard
+                endpoints={webhooks.map(
+                  (w): WebhookRow => ({
+                    id: w.id,
+                    url: w.url,
+                    events: w.events,
+                    active: w.active,
+                    deliveries: w.deliveries.map((d) => ({
+                      event: d.event,
+                      status: d.status,
+                      responseCode: d.responseCode,
+                    })),
+                  }),
+                )}
+              />
+            </CardContent>
+          </Card>
+        </>
+      ) : null}
 
       <Card>
         <CardHeader>
