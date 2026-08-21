@@ -65,6 +65,17 @@ Deferred (founder: "erstmal ohne Chat"): deal-room chat + tasks, INVITE_ONLY inv
 - [x] Acceptance integration-tested (19 integration tests total)
 Deferred: recommendation engine beyond matching, licensed price-feed adapters, INVITE_ONLY invites, dispute-resolution UI.
 
+## Pre-Go-Live Hardening ✅ (delivered)
+- [x] Password reset flow (hashed single-use tokens, 30-min expiry, session revocation, no user enumeration) + provider-neutral mail abstraction (SMTP via `SMTP_URL`, console mailer in dev)
+- [x] TOTP MFA (dependency-free RFC 6238 implementation verified against the RFC test vectors; setup/verify/disable in settings; login gate)
+- [x] GDPR self-service: data export (Art. 15) and account anonymization (Art. 17) with the legal-retention split enforced; privacy-policy and imprint skeleton pages (counsel placeholders, linked in the footer)
+- [x] S3-compatible storage adapter (env-switched; local disk in dev)
+- [x] Production seed (`db:seed:prod`): countries only (all NOT_TRADE_ENABLED), demo_mode=false, bootstrap admin from env
+- [x] Production CSP + HSTS; invoice numbering on a Postgres sequence
+- [x] Dockerfile (node:24-slim, standalone output, non-root) + GHCR publish workflow; CI on Node 24
+- [x] Acceptance integration-tested (23 integration tests total)
+Prepared, needs accounts/decisions: Sentry DSN, SMTP provider + AVV, S3 bucket, external pen-test.
+
 ## M6 — Enterprise
 ERP integrations (SAP/Dynamics adapters), public API + API keys + webhooks, SSO (OIDC/SAML), advanced reporting, data residency options.
 

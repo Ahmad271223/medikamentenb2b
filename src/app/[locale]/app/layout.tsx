@@ -33,6 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/onboarding', label: t('nav.onboarding') },
         { href: '/app/organization', label: t('nav.organization') },
         { href: '/app/notifications', label: t('nav.notifications') },
+        { href: '/app/settings', label: t('nav.settings') },
       ],
     },
   ];
@@ -60,7 +61,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/licenses', label: t('nav.licenses') },
         { href: '/app/warehouses', label: t('nav.warehouses') },
         { href: '/app/documents', label: t('nav.documents') },
-        { href: '/app/settings', label: t('nav.settings') },
       ],
     });
   }

@@ -129,7 +129,45 @@
     "errorEmailTaken": "An account already exists for this email.",
     "errorRateLimited": "Too many attempts. Please try again later.",
     "errorPasswordPolicy": "The password does not meet the policy (min. 12 characters, letters and digits).",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "forgotLink": "Forgot password?",
+    "forgotTitle": "Reset password",
+    "forgotText": "We will send you a reset link — if an account exists for this e-mail.",
+    "forgotSent": "If an account exists, an e-mail has been sent. Check your inbox.",
+    "resetTitle": "Set a new password",
+    "newPassword": "New password",
+    "resetDone": "Password changed. All sessions were signed out — please sign in again.",
+    "mfaCode": "MFA code (6 digits)",
+    "errorMfaRequired": "This account is protected by MFA — enter the 6-digit code.",
+    "errorMfaInvalid": "Invalid MFA code.",
+    "errorResetInvalid": "The link is invalid or expired. Please request a new one."
+  },
+  "mfa": {
+    "title": "Two-factor authentication (TOTP)",
+    "hint": "Recommended for every account, intended as mandatory for compliance and admin roles. Works with any authenticator app (Aegis, Google Authenticator, 1Password …).",
+    "statusOn": "Enabled",
+    "statusOff": "Not enabled",
+    "start": "Set up",
+    "secretLabel": "Secret — enter manually into your authenticator app:",
+    "verify": "Confirm code",
+    "disable": "Disable (code required)",
+    "enabled": "MFA is now active.",
+    "disabled": "MFA has been disabled."
+  },
+  "privacyCtrl": {
+    "title": "Privacy",
+    "export": "Download data export (JSON)",
+    "exportNote": "All personal data linked to your account (GDPR Art. 15).",
+    "deleteTitle": "Delete account",
+    "deleteNote": "Your profile is irreversibly anonymized and all sessions are terminated (GDPR Art. 17). Trade records subject to legal retention (transactions, batches, compliance decisions, audit) remain, referencing the anonymized account.",
+    "deleteConfirm": "Password to confirm",
+    "deleteButton": "Anonymize account irreversibly",
+    "platformNote": "Platform accounts (admin/compliance/analyst) are managed by the platform admin."
+  },
+  "legal": {
+    "privacyTitle": "Privacy policy",
+    "imprintTitle": "Legal notice",
+    "draftBanner": "DRAFT SKELETON — contents are placeholders and must be reviewed and replaced by legal counsel before publication."
   },
   "dashboard": {
     "title": "Dashboard",

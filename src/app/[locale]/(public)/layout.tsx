@@ -34,8 +34,16 @@ export default async function PublicLayout({ children }: { children: React.React
       <footer className="border-t border-slate-200 bg-slate-50">
         <div className="mx-auto w-full max-w-6xl px-4 py-8">
           <p className="text-xs leading-relaxed text-slate-500">{t('common.legalDisclaimer')}</p>
-          <p className="mt-3 text-xs text-slate-400">
-            © 2026 {BRAND.name} {BRAND.legalSuffix}
+          <p className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">
+            <span>
+              © 2026 {BRAND.name} {BRAND.legalSuffix}
+            </span>
+            <Link href="/privacy" className="hover:text-slate-600 hover:underline">
+              {t('legal.privacyTitle')}
+            </Link>
+            <Link href="/imprint" className="hover:text-slate-600 hover:underline">
+              {t('legal.imprintTitle')}
+            </Link>
           </p>
         </div>
       </footer>

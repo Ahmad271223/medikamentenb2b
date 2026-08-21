@@ -63,7 +63,8 @@ messages/                 i18n catalogs
 
 ## Status
 
-**M1 — Foundation, M2 — Marketplace, M3 — Compliance operations, M4 — Transaction execution, M5 — Intelligence: complete**, including the deal-room chat, platform analytics with reference-backed savings, sourced pricing/shortage data entry, buyer dashboard — plus hardening: **Next 16** (proxy convention, clears the sharp audit findings), GitHub Actions CI, and 3 Playwright E2E journeys.
+**M1 — Foundation, M2 — Marketplace, M3 — Compliance operations, M4 — Transaction execution, M5 — Intelligence, Pre-Go-Live Hardening: complete.**
+Hardening adds: password reset + SMTP-neutral mailer, dependency-free TOTP MFA (RFC-vector-tested), GDPR self-service (export + anonymization with legal-retention split), privacy/imprint skeletons, S3 storage adapter, production seed (`npm run db:seed:prod`, bootstrap admin via `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD`), production CSP+HSTS, sequence-based invoice numbers, Dockerfile (standalone, non-root) + GHCR publish workflow — on top of **Next 16**, GitHub Actions CI and 3 Playwright E2E journeys. See the go-live analysis for the remaining non-code steps (legal model, payment provider, corridor research).
 M4 added: transaction detail with role-based actions, the documents-required loop with human document verification, a payments abstraction behind a provider interface (explicitly-labeled MANUAL_DEMO provider — no real funds; licensed provider = founder decision #2), shipments with customs milestones and temperature logs (exact excursion detection), **dispatch re-checks the destination's current verified shelf-life rule against the actual ETA**, and settlement on buyer confirmation (payment released, payout executed, invoices written, inventory booked reserved→sold).
 
 Tests: `npm test` (114 unit) · `npm run test:integration` (16 acceptance tests against Postgres — M2+M3+M4 criteria, including the full §70 lifecycle to SETTLED).

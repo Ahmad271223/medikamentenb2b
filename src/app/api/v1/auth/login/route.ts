@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { ApiError, assertSameOrigin, clientIp, handle, ok } from '@/lib/api';
 import { verifyPassword } from '@/lib/crypto/password';
+import { verifyTotp } from '@/lib/crypto/totp';
 import { createSession, SESSION_COOKIE, sessionCookieOptions } from '@/lib/auth/session';
 import { rateLimit } from '@/lib/auth/rate-limit';
 import { writeAudit } from '@/lib/audit/audit';
@@ -9,6 +10,8 @@ import { writeAudit } from '@/lib/audit/audit';
 const LoginSchema = z.object({
   email: z.string().email().max(200).transform((v) => v.toLowerCase().trim()),
   password: z.string().min(1).max(200),
+  /** Required when the account has MFA enabled. */
+  totp: z.string().length(6).optional(),
 });
 
 export const POST = handle(async (req) => {
@@ -27,6 +30,14 @@ export const POST = handle(async (req) => {
   // Constant-shape failure: never reveal whether the account exists.
   if (!user || user.status !== 'ACTIVE' || !(await verifyPassword(input.password, user.passwordHash))) {
     throw new ApiError('UNAUTHENTICATED', 401, 'INVALID_CREDENTIALS');
+  }
+
+  // MFA gate — only after the password is proven correct.
+  if (user.mfaEnabled && user.mfaSecret) {
+    if (!input.totp) throw new ApiError('UNAUTHENTICATED', 401, 'MFA_REQUIRED');
+    if (!verifyTotp(user.mfaSecret, input.totp)) {
+      throw new ApiError('UNAUTHENTICATED', 401, 'MFA_INVALID');
+    }
   }
 
   const session = await createSession(user.id, { ip, userAgent: req.headers.get('user-agent') });

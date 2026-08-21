@@ -14,10 +14,15 @@ export default async function LoginPage() {
         </CardHeader>
         <CardContent>
           <LoginForm />
-          <p className="mt-4 text-sm text-slate-500">
-            {t('noAccount')}{' '}
-            <Link href="/register" className="font-medium text-brand-700 hover:underline">
-              {t('registerTitle')}
+          <p className="mt-4 flex flex-wrap justify-between gap-2 text-sm text-slate-500">
+            <span>
+              {t('noAccount')}{' '}
+              <Link href="/register" className="font-medium text-brand-700 hover:underline">
+                {t('registerTitle')}
+              </Link>
+            </span>
+            <Link href="/forgot-password" className="text-brand-700 hover:underline">
+              {t('forgotLink')}
             </Link>
           </p>
         </CardContent>

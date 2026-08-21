@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import { dirname, join, normalize, resolve, sep } from 'node:path';
 import { env } from '@/lib/env';
+import { s3StorageAdapter } from './s3';
 import type { StorageAdapter, StoredObject } from './storage';
 
 // Local-disk adapter for development. Keys are UUID-based and validated
@@ -43,6 +44,6 @@ export const localStorageAdapter: StorageAdapter = {
 };
 
 export function getStorage(): StorageAdapter {
-  // Future: switch on env (S3 adapter in staging/prod).
-  return localStorageAdapter;
+  // S3 in staging/production (configured bucket), local disk in development.
+  return env().S3_BUCKET ? s3StorageAdapter : localStorageAdapter;
 }

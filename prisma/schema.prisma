@@ -401,6 +401,7 @@ model User {
   deletedAt     DateTime?
 
   sessions             Session[]
+  passwordResetTokens  PasswordResetToken[]
   memberships          OrganizationMember[]
   notifications        Notification[]
   auditLogs            AuditLog[]
@@ -414,6 +415,18 @@ model User {
   dealMessages         DealMessage[]
 
   @@index([platformRole])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Session {

@@ -129,7 +129,45 @@
     "errorEmailTaken": "Für diese E-Mail existiert bereits ein Konto.",
     "errorRateLimited": "Zu viele Versuche. Bitte später erneut versuchen.",
     "errorPasswordPolicy": "Das Passwort erfüllt die Richtlinie nicht (min. 12 Zeichen, Buchstaben und Ziffern).",
-    "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+    "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+    "forgotLink": "Passwort vergessen?",
+    "forgotTitle": "Passwort zurücksetzen",
+    "forgotText": "Wir senden Ihnen einen Link zum Zurücksetzen — sofern ein Konto zu dieser E-Mail existiert.",
+    "forgotSent": "Falls ein Konto existiert, wurde eine E-Mail versendet. Prüfen Sie Ihr Postfach.",
+    "resetTitle": "Neues Passwort setzen",
+    "newPassword": "Neues Passwort",
+    "resetDone": "Passwort geändert. Alle Sitzungen wurden abgemeldet — bitte neu anmelden.",
+    "mfaCode": "MFA-Code (6 Ziffern)",
+    "errorMfaRequired": "Dieses Konto ist mit MFA geschützt — bitte den 6-stelligen Code eingeben.",
+    "errorMfaInvalid": "MFA-Code ungültig.",
+    "errorResetInvalid": "Der Link ist ungültig oder abgelaufen. Bitte neu anfordern."
+  },
+  "mfa": {
+    "title": "Zwei-Faktor-Authentifizierung (TOTP)",
+    "hint": "Empfohlen für alle Konten, verpflichtend gedacht für Compliance- und Admin-Rollen. Funktioniert mit jeder Authenticator-App (Aegis, Google Authenticator, 1Password …).",
+    "statusOn": "Aktiv",
+    "statusOff": "Nicht aktiv",
+    "start": "Einrichten",
+    "secretLabel": "Geheimnis — manuell in die Authenticator-App eintragen:",
+    "verify": "Code bestätigen",
+    "disable": "Deaktivieren (Code erforderlich)",
+    "enabled": "MFA ist jetzt aktiv.",
+    "disabled": "MFA wurde deaktiviert."
+  },
+  "privacyCtrl": {
+    "title": "Datenschutz",
+    "export": "Datenauskunft herunterladen (JSON)",
+    "exportNote": "Alle personenbezogenen Daten zu Ihrem Konto (Art. 15 DSGVO).",
+    "deleteTitle": "Konto löschen",
+    "deleteNote": "Ihr Profil wird unwiderruflich anonymisiert und alle Sitzungen beendet (Art. 17 DSGVO). Gesetzlich aufbewahrungspflichtige Handelsdaten (Transaktionen, Chargen, Compliance-Entscheidungen, Audit) bleiben in anonymisierter Zuordnung erhalten.",
+    "deleteConfirm": "Passwort zur Bestätigung",
+    "deleteButton": "Konto unwiderruflich anonymisieren",
+    "platformNote": "Plattform-Konten (Admin/Compliance/Analyst) werden vom Plattform-Admin verwaltet."
+  },
+  "legal": {
+    "privacyTitle": "Datenschutzerklärung",
+    "imprintTitle": "Impressum",
+    "draftBanner": "ENTWURFSGERÜST — Inhalte sind Platzhalter und müssen vor Veröffentlichung von einer Anwältin / einem Anwalt geprüft und ersetzt werden."
   },
   "dashboard": {
     "title": "Übersicht",

@@ -64,13 +64,13 @@ export async function authorizePayment(userId: string, buyerOrgId: string, trans
   return { state: 'PAYMENT_AUTHORIZED' as const };
 }
 
-// Count-based numbering inside the settlement transaction is sufficient while
-// settlements are serialized; production replaces this with a Postgres
-// sequence (the @unique constraint on Invoice.number catches any race).
-async function nextInvoiceNumber(db: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]): Promise<string> {
+/** Race-safe invoice numbering via a Postgres sequence (migration m6). */
+export async function nextInvoiceNumber(
+  db: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+): Promise<string> {
   const year = new Date().getUTCFullYear();
-  const count = await db.invoice.count();
-  return `PB-${year}-${String(count + 1).padStart(5, '0')}`;
+  const rows = await db.$queryRaw<Array<{ n: bigint }>>`SELECT nextval('invoice_number_seq') AS n`;
+  return `PB-${year}-${String(rows[0]!.n).padStart(5, '0')}`;
 }
 
 /**

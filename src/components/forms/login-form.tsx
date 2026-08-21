@@ -13,6 +13,8 @@ export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totp, setTotp] = useState('');
+  const [mfaNeeded, setMfaNeeded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -20,11 +22,25 @@ export function LoginForm() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const res = await apiPost('/api/v1/auth/login', { email, password });
+    const res = await apiPost('/api/v1/auth/login', {
+      email,
+      password,
+      ...(totp ? { totp } : {}),
+    });
     setBusy(false);
     if (res.ok) {
       router.push('/app');
       router.refresh();
+      return;
+    }
+    if (res.error.message === 'MFA_REQUIRED') {
+      setMfaNeeded(true);
+      setError(t('errorMfaRequired'));
+      return;
+    }
+    if (res.error.message === 'MFA_INVALID') {
+      setMfaNeeded(true);
+      setError(t('errorMfaInvalid'));
       return;
     }
     setError(
@@ -46,6 +62,20 @@ export function LoginForm() {
         <Label htmlFor="password">{tc('password')}</Label>
         <Input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
+      {mfaNeeded ? (
+        <div>
+          <Label htmlFor="totp">{t('mfaCode')}</Label>
+          <Input
+            id="totp"
+            inputMode="numeric"
+            pattern="\d{6}"
+            maxLength={6}
+            autoComplete="one-time-code"
+            value={totp}
+            onChange={(e) => setTotp(e.target.value)}
+          />
+        </div>
+      ) : null}
       <FieldError>{error}</FieldError>
       <Button type="submit" className="w-full" disabled={busy}>
         {busy ? tc('loading') : tc('signIn')}
