@@ -140,7 +140,10 @@
     "mfaCode": "MFA code (6 digits)",
     "errorMfaRequired": "This account is protected by MFA — enter the 6-digit code.",
     "errorMfaInvalid": "Invalid MFA code.",
-    "errorResetInvalid": "The link is invalid or expired. Please request a new one."
+    "errorResetInvalid": "The link is invalid or expired. Please request a new one.",
+    "countryScopeHint": "Only countries enabled for this organization type.",
+    "errorCountryNotSupported": "This country is not currently enabled for this organization type.",
+    "noCountries": "No country is currently enabled for this organization type."
   },
   "mfa": {
     "title": "Two-factor authentication (TOTP)",
@@ -545,7 +548,11 @@
     "setSuspend": "Suspend",
     "setDisable": "Disable",
     "changed": "Status changed — {count} listings re-evaluated.",
-    "gateNote": "Enablement requires at least one verified shelf-life rule (step 13 of the country research pipeline). Without verified rules a country can never become tradable."
+    "gateNote": "Enablement requires at least one verified shelf-life rule (step 13 of the country research pipeline). Without verified rules a country can never become tradable.",
+    "scope": "Platform scope",
+    "scopeSupply": "Sellers (origin)",
+    "scopeDestination": "Buyers (destination)",
+    "scopeNote": "Scope = who may register. Tradability remains tied to verified rules regardless."
   },
   "recalls": {
     "title": "Recalls",

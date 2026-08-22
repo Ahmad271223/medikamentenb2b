@@ -146,3 +146,41 @@ export async function computeCountryReadiness(userId: string, countryId: string)
 
   return { total, assessed, notAssessed: [...NOT_ASSESSED], version: score.version };
 }
+
+
+// ── Platform scope (founder decision, NOT a regulatory statement) ───────────
+// Which countries may register on the supply (seller) or destination (buyer)
+// side. Independent of trade enablement: a destination in scope still needs
+// verified rules before anything becomes tradable.
+export async function setCountryScope(
+  userId: string,
+  countryId: string,
+  scope: { isSupplyEnabled?: boolean; isDestinationEnabled?: boolean },
+) {
+  const country = await prisma.country.findUnique({ where: { id: countryId } });
+  if (!country) throw new ApiError('NOT_FOUND', 404, 'COUNTRY_NOT_FOUND');
+  const next = {
+    isSupplyEnabled: scope.isSupplyEnabled ?? country.isSupplyEnabled,
+    isDestinationEnabled: scope.isDestinationEnabled ?? country.isDestinationEnabled,
+  };
+  if (next.isSupplyEnabled === country.isSupplyEnabled && next.isDestinationEnabled === country.isDestinationEnabled) {
+    return { ...next, reevaluatedListings: 0 };
+  }
+  await prisma.$transaction(async (tx) => {
+    await tx.country.update({ where: { id: countryId }, data: next });
+    await writeAudit(
+      {
+        actorUserId: userId,
+        action: 'COUNTRY_SCOPE_CHANGED',
+        entityType: 'Country',
+        entityId: countryId,
+        oldValue: { isSupplyEnabled: country.isSupplyEnabled, isDestinationEnabled: country.isDestinationEnabled },
+        newValue: next,
+      },
+      tx,
+    );
+  });
+  // Destination scope feeds the per-country eligibility snapshots of open listings.
+  const reevaluated = await reevaluateActiveListings();
+  return { ...next, reevaluatedListings: reevaluated };
+}

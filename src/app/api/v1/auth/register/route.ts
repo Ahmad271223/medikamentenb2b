@@ -33,6 +33,15 @@ export const POST = handle(async (req) => {
 
   const country = await prisma.country.findUnique({ where: { id: input.countryId } });
   if (!country) throw new ApiError('VALIDATION_ERROR', 400, 'UNKNOWN_COUNTRY');
+  // Platform scope: sellers only from supply-enabled, buyers only from
+  // destination-enabled countries (hybrids need both). Managed in Admin → Countries.
+  const inScope =
+    input.orgKind === 'SELLER'
+      ? country.isSupplyEnabled
+      : input.orgKind === 'BUYER'
+        ? country.isDestinationEnabled
+        : country.isSupplyEnabled && country.isDestinationEnabled;
+  if (!inScope) throw new ApiError('VALIDATION_ERROR', 400, 'COUNTRY_NOT_SUPPORTED');
 
   const existing = await prisma.user.findUnique({ where: { email: input.email } });
   if (existing) throw new ApiError('CONFLICT', 409, 'EMAIL_TAKEN');

@@ -12,7 +12,22 @@ export interface CountryOption {
   name: string;
 }
 
-export function RegisterForm({ countries }: { countries: CountryOption[] }) {
+/** Registration needs the platform scope flags on top of the plain option. */
+export interface RegisterCountryOption extends CountryOption {
+  /** may register as seller (supply side) */
+  supply: boolean;
+  /** may register as buyer (destination side) */
+  destination: boolean;
+}
+
+/** Countries a given organization kind may register from — mirrors the server check. */
+function countriesFor(kind: string, countries: RegisterCountryOption[]) {
+  return countries.filter((c) =>
+    kind === 'SELLER' ? c.supply : kind === 'BUYER' ? c.destination : c.supply && c.destination,
+  );
+}
+
+export function RegisterForm({ countries }: { countries: RegisterCountryOption[] }) {
   const t = useTranslations('auth');
   const tc = useTranslations('common');
   const locale = useLocale();
@@ -24,13 +39,24 @@ export function RegisterForm({ countries }: { countries: CountryOption[] }) {
     password: '',
     orgName: '',
     orgKind: 'SELLER',
-    countryId: countries[0]?.id ?? 'DE',
+    countryId: countriesFor('SELLER', countries)[0]?.id ?? '',
   });
+  const available = countriesFor(form.orgKind, countries);
+  const hybridPossible = countries.some((c) => c.supply && c.destination);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  function setKind(e: React.ChangeEvent<HTMLSelectElement>) {
+    const orgKind = e.target.value;
+    setForm((f) => {
+      const next = countriesFor(orgKind, countries);
+      const keep = next.some((c) => c.id === f.countryId);
+      return { ...f, orgKind, countryId: keep ? f.countryId : (next[0]?.id ?? '') };
+    });
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,6 +74,8 @@ export function RegisterForm({ countries }: { countries: CountryOption[] }) {
         ? t('errorEmailTaken')
         : res.error.message === 'PASSWORD_POLICY'
           ? t('errorPasswordPolicy')
+          : res.error.message === 'COUNTRY_NOT_SUPPORTED'
+            ? t('errorCountryNotSupported')
           : res.error.code === 'RATE_LIMITED'
             ? t('errorRateLimited')
             : t('errorGeneric'),
@@ -73,21 +101,24 @@ export function RegisterForm({ countries }: { countries: CountryOption[] }) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="orgKind">{t('orgKind')}</Label>
-          <Select id="orgKind" value={form.orgKind} onChange={set('orgKind')}>
+          <Select id="orgKind" value={form.orgKind} onChange={setKind}>
             <option value="SELLER">{t('seller')}</option>
             <option value="BUYER">{t('buyer')}</option>
-            <option value="HYBRID">{t('hybrid')}</option>
+            {hybridPossible ? <option value="HYBRID">{t('hybrid')}</option> : null}
           </Select>
         </div>
         <div>
           <Label htmlFor="countryId">{t('countryLabel')}</Label>
-          <Select id="countryId" value={form.countryId} onChange={set('countryId')}>
-            {countries.map((c) => (
+          <Select id="countryId" value={form.countryId} onChange={set('countryId')} disabled={available.length === 0}>
+            {available.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
             ))}
           </Select>
+          <p className="mt-1 text-xs text-slate-500">
+            {available.length === 0 ? t('noCountries') : t('countryScopeHint')}
+          </p>
         </div>
       </div>
       <div>
@@ -107,7 +138,7 @@ export function RegisterForm({ countries }: { countries: CountryOption[] }) {
         <p className="mt-1 text-xs text-slate-500">{t('passwordHint')}</p>
       </div>
       <FieldError>{error}</FieldError>
-      <Button type="submit" className="w-full" disabled={busy}>
+      <Button type="submit" className="w-full" disabled={busy || available.length === 0}>
         {busy ? tc('loading') : tc('register')}
       </Button>
     </form>

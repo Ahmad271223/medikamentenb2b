@@ -59,7 +59,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         { href: '/app/shipments', label: t('shipments.title') },
         { href: '/app/products', label: t('nav.products') },
         { href: '/app/licenses', label: t('nav.licenses') },
-        { href: '/app/warehouses', label: t('nav.warehouses') },
+        ...(isSellerSide ? [{ href: '/app/warehouses', label: t('nav.warehouses') }] : []),
         { href: '/app/documents', label: t('nav.documents') },
       ],
     });

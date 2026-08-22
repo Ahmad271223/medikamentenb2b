@@ -18,14 +18,20 @@ export default async function OnboardingPage() {
     prisma.warehouse.count({ where: { orgId: user.org.id, deletedAt: null } }),
   ]);
 
-  const canSubmit = licenseCount > 0 && warehouseCount > 0 && (user.org.status === 'DRAFT' || user.org.status === 'REJECTED');
+  // Warehouses matter for the supply side only (shipments originate there);
+  // a pure buyer receives at its organization address.
+  const needsWarehouse = user.org.kind !== 'BUYER';
+  const canSubmit =
+    licenseCount > 0 &&
+    (!needsWarehouse || warehouseCount > 0) &&
+    (user.org.status === 'DRAFT' || user.org.status === 'REJECTED');
   const submitted = user.org.status === 'PENDING_KYB';
   const verified = user.org.status === 'VERIFIED';
 
   const steps = [
     { label: t('onboarding.stepProfile'), done: true },
     { label: t('onboarding.stepLicense'), done: licenseCount > 0 },
-    { label: t('onboarding.stepWarehouse'), done: warehouseCount > 0 },
+    ...(needsWarehouse ? [{ label: t('onboarding.stepWarehouse'), done: warehouseCount > 0 }] : []),
     { label: t('onboarding.stepSubmit'), done: submitted || verified },
     { label: t('onboarding.stepReview'), done: verified },
   ];

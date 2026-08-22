@@ -14,31 +14,37 @@ import { checkPasswordPolicy, hashPassword } from '../src/lib/crypto/password';
 
 const prisma = new PrismaClient();
 
+// Platform scope at bootstrap (founder decision 2026-08-21): supply side
+// DE, NL, AT, CH, IE — destination side LB. All other countries are listed but
+// out of scope (nobody can register there). After bootstrap the scope is
+// managed in Admin → Countries (setCountryScope); the seed never overwrites
+// flags on re-run. Scope ≠ tradability: a destination still needs verified rules.
 const COUNTRIES: Array<{ id: string; en: string; de: string; ar: string; region: string; isEea?: boolean; supply?: boolean; destination?: boolean }> = [
   { id: 'DE', en: 'Germany', de: 'Deutschland', ar: 'ألمانيا', region: 'Western Europe', isEea: true, supply: true },
   { id: 'NL', en: 'Netherlands', de: 'Niederlande', ar: 'هولندا', region: 'Western Europe', isEea: true, supply: true },
   { id: 'AT', en: 'Austria', de: 'Österreich', ar: 'النمسا', region: 'Western Europe', isEea: true, supply: true },
   { id: 'CH', en: 'Switzerland', de: 'Schweiz', ar: 'سويسرا', region: 'Western Europe', isEea: false, supply: true },
+  { id: 'IE', en: 'Ireland', de: 'Irland', ar: 'أيرلندا', region: 'Northern Europe', isEea: true, supply: true },
   { id: 'BE', en: 'Belgium', de: 'Belgien', ar: 'بلجيكا', region: 'Western Europe', isEea: true },
   { id: 'FR', en: 'France', de: 'Frankreich', ar: 'فرنسا', region: 'Western Europe', isEea: true },
   { id: 'DK', en: 'Denmark', de: 'Dänemark', ar: 'الدنمارك', region: 'Northern Europe', isEea: true },
   { id: 'SE', en: 'Sweden', de: 'Schweden', ar: 'السويد', region: 'Northern Europe', isEea: true },
   { id: 'IT', en: 'Italy', de: 'Italien', ar: 'إيطاليا', region: 'Southern Europe', isEea: true },
   { id: 'ES', en: 'Spain', de: 'Spanien', ar: 'إسبانيا', region: 'Southern Europe', isEea: true },
-  { id: 'EG', en: 'Egypt', de: 'Ägypten', ar: 'مصر', region: 'MENA', destination: true },
-  { id: 'JO', en: 'Jordan', de: 'Jordanien', ar: 'الأردن', region: 'MENA', destination: true },
   { id: 'LB', en: 'Lebanon', de: 'Libanon', ar: 'لبنان', region: 'MENA', destination: true },
-  { id: 'SA', en: 'Saudi Arabia', de: 'Saudi-Arabien', ar: 'المملكة العربية السعودية', region: 'MENA', destination: true },
-  { id: 'AE', en: 'United Arab Emirates', de: 'Vereinigte Arabische Emirate', ar: 'الإمارات العربية المتحدة', region: 'MENA', destination: true },
-  { id: 'KE', en: 'Kenya', de: 'Kenia', ar: 'كينيا', region: 'Sub-Saharan Africa', destination: true },
-  { id: 'NG', en: 'Nigeria', de: 'Nigeria', ar: 'نيجيريا', region: 'Sub-Saharan Africa', destination: true },
-  { id: 'ZA', en: 'South Africa', de: 'Südafrika', ar: 'جنوب أفريقيا', region: 'Sub-Saharan Africa', destination: true },
-  { id: 'PK', en: 'Pakistan', de: 'Pakistan', ar: 'باكستان', region: 'South Asia', destination: true },
-  { id: 'KZ', en: 'Kazakhstan', de: 'Kasachstan', ar: 'كازاخستان', region: 'Central Asia', destination: true },
-  { id: 'UZ', en: 'Uzbekistan', de: 'Usbekistan', ar: 'أوزبكستان', region: 'Central Asia', destination: true },
-  { id: 'GE', en: 'Georgia', de: 'Georgien', ar: 'جورجيا', region: 'Eastern Europe', destination: true },
-  { id: 'VN', en: 'Vietnam', de: 'Vietnam', ar: 'فيتنام', region: 'Southeast Asia', destination: true },
-  { id: 'PH', en: 'Philippines', de: 'Philippinen', ar: 'الفلبين', region: 'Southeast Asia', destination: true },
+  { id: 'EG', en: 'Egypt', de: 'Ägypten', ar: 'مصر', region: 'MENA' },
+  { id: 'JO', en: 'Jordan', de: 'Jordanien', ar: 'الأردن', region: 'MENA' },
+  { id: 'SA', en: 'Saudi Arabia', de: 'Saudi-Arabien', ar: 'المملكة العربية السعودية', region: 'MENA' },
+  { id: 'AE', en: 'United Arab Emirates', de: 'Vereinigte Arabische Emirate', ar: 'الإمارات العربية المتحدة', region: 'MENA' },
+  { id: 'KE', en: 'Kenya', de: 'Kenia', ar: 'كينيا', region: 'Sub-Saharan Africa' },
+  { id: 'NG', en: 'Nigeria', de: 'Nigeria', ar: 'نيجيريا', region: 'Sub-Saharan Africa' },
+  { id: 'ZA', en: 'South Africa', de: 'Südafrika', ar: 'جنوب أفريقيا', region: 'Sub-Saharan Africa' },
+  { id: 'PK', en: 'Pakistan', de: 'Pakistan', ar: 'باكستان', region: 'South Asia' },
+  { id: 'KZ', en: 'Kazakhstan', de: 'Kasachstan', ar: 'كازاخستان', region: 'Central Asia' },
+  { id: 'UZ', en: 'Uzbekistan', de: 'Usbekistan', ar: 'أوزبكستان', region: 'Central Asia' },
+  { id: 'GE', en: 'Georgia', de: 'Georgien', ar: 'جورجيا', region: 'Eastern Europe' },
+  { id: 'VN', en: 'Vietnam', de: 'Vietnam', ar: 'فيتنام', region: 'Southeast Asia' },
+  { id: 'PH', en: 'Philippines', de: 'Philippinen', ar: 'الفلبين', region: 'Southeast Asia' },
 ];
 
 async function main() {

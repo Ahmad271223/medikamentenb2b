@@ -128,3 +128,57 @@ export function ResolveRecallButton({ recallId }: { recallId: string }) {
     </Button>
   );
 }
+
+
+export function ScopeToggles({
+  countryId,
+  supply,
+  destination,
+  canEdit,
+}: {
+  countryId: string;
+  supply: boolean;
+  destination: boolean;
+  canEdit: boolean;
+}) {
+  const t = useTranslations('countries');
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function change(patch: { isSupplyEnabled?: boolean; isDestinationEnabled?: boolean }) {
+    setBusy(true);
+    setError(null);
+    const res = await apiPost(`/api/v1/countries/${countryId}/scope`, patch);
+    setBusy(false);
+    if (res.ok) {
+      router.refresh();
+      return;
+    }
+    setError(res.error.message);
+  }
+
+  return (
+    <div className="space-y-1 text-xs">
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={supply}
+          disabled={busy || !canEdit}
+          onChange={(e) => change({ isSupplyEnabled: e.target.checked })}
+        />
+        {t('scopeSupply')}
+      </label>
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={destination}
+          disabled={busy || !canEdit}
+          onChange={(e) => change({ isDestinationEnabled: e.target.checked })}
+        />
+        {t('scopeDestination')}
+      </label>
+      <FieldError>{error}</FieldError>
+    </div>
+  );
+}

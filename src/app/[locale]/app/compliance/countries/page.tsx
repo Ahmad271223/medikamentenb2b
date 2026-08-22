@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge, toneForStatus } from '@/components/ui/badge';
 import { Table, TBody, Td, Th, THead, Tr } from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/kpi';
-import { ReadinessButton, TradeStatusButtons } from '@/components/forms/compliance-actions';
+import { ReadinessButton, ScopeToggles, TradeStatusButtons } from '@/components/forms/compliance-actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +43,7 @@ export default async function CountriesPage() {
       <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('countries.title')}</h1>
       <div className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900">
         {t('countries.gateNote')}
+        <span className="mt-1 block text-brand-800/80">{t('countries.scopeNote')}</span>
       </div>
 
       <Card>
@@ -52,6 +53,7 @@ export default async function CountriesPage() {
               <Tr>
                 <Th>{t('common.country')}</Th>
                 <Th>{t('common.status')}</Th>
+                <Th>{t('countries.scope')}</Th>
                 <Th>{t('countries.verifiedRules')}</Th>
                 <Th>{t('countries.readiness')}</Th>
                 {canEnable ? <Th>{t('common.actions')}</Th> : null}
@@ -69,6 +71,14 @@ export default async function CountriesPage() {
                     </Td>
                     <Td>
                       <Badge tone={toneForStatus(c.tradeStatus)}>{t(`status.tradeStatus.${c.tradeStatus}`)}</Badge>
+                    </Td>
+                    <Td>
+                      <ScopeToggles
+                        countryId={c.id}
+                        supply={c.isSupplyEnabled}
+                        destination={c.isDestinationEnabled}
+                        canEdit={canEnable}
+                      />
                     </Td>
                     <Td className="tabular-nums">{verifiedByCountry.get(c.id) ?? 0}</Td>
                     <Td className="max-w-72">

@@ -11,6 +11,13 @@ export const POST = handle(async (req) => {
   if (org.status !== 'DRAFT' && org.status !== 'REJECTED') {
     throw new ApiError('CONFLICT', 409, 'KYB_ALREADY_SUBMITTED');
   }
+  const [licenseCount, warehouseCount] = await Promise.all([
+    prisma.license.count({ where: { orgId: org.id } }),
+    prisma.warehouse.count({ where: { orgId: org.id, deletedAt: null } }),
+  ]);
+  if (licenseCount === 0 || (org.kind !== 'BUYER' && warehouseCount === 0)) {
+    throw new ApiError('CONFLICT', 409, 'KYB_PREREQUISITES_MISSING', { licenseCount, warehouseCount });
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.organization.update({

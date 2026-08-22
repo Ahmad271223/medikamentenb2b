@@ -74,3 +74,7 @@ Tests: `npm test` (114 unit) · `npm run test:integration` (16 acceptance tests 
 Next: **M5 — Intelligence** (pricing references from licensed sources, shortage signals, analytics dashboards, economic value model per deal) or hardening (Next 16 upgrade, CI pipeline, deal-room chat). Roadmap: [PART J](docs/architecture/J-mvp-roadmap.md). Open founder decisions: [PART O](docs/architecture/O-open-decisions.md).
 
 Known items: `npm audit` reports 3 high findings in `sharp` bundled by Next 15.5 — resolved by the scheduled Next 16 upgrade; no untrusted image processing is used yet. Production build and dev server share `.next/` — don't run `npm run build` while `npm run dev` is running (restart dev afterwards).
+
+## Country scope (who may register)
+
+Two flags per country, managed by a Platform Admin under **Compliance → Länder** (`POST /api/v1/countries/:id/scope`): `isSupplyEnabled` (sellers may register) and `isDestinationEnabled` (buyers may register). Registration filters the country list by organization type and the server rejects out-of-scope combinations (`COUNTRY_NOT_SUPPORTED`). The production seed bootstraps the initial scope — **supply: DE, NL, AT, CH, IE · destination: LB** — and never overwrites the flags afterwards. Scope is a business decision and is independent of tradability: a destination country still needs verified regulatory rules before any listing becomes eligible for it.

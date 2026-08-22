@@ -13,7 +13,12 @@ export default async function RegisterPage() {
 
   const countries = await prisma.country.findMany({ orderBy: { id: 'asc' } });
   const options = countries
-    .map((c) => ({ id: c.id, name: `${countryName(c, locale)} (${c.id})` }))
+    .map((c) => ({
+      id: c.id,
+      name: `${countryName(c, locale)} (${c.id})`,
+      supply: c.isSupplyEnabled,
+      destination: c.isDestinationEnabled,
+    }))
     .sort((a, b) => a.name.localeCompare(b.name, locale));
 
   return (

@@ -140,7 +140,10 @@
     "mfaCode": "MFA-Code (6 Ziffern)",
     "errorMfaRequired": "Dieses Konto ist mit MFA geschützt — bitte den 6-stelligen Code eingeben.",
     "errorMfaInvalid": "MFA-Code ungültig.",
-    "errorResetInvalid": "Der Link ist ungültig oder abgelaufen. Bitte neu anfordern."
+    "errorResetInvalid": "Der Link ist ungültig oder abgelaufen. Bitte neu anfordern.",
+    "countryScopeHint": "Nur Länder, die für diesen Organisationstyp freigeschaltet sind.",
+    "errorCountryNotSupported": "Dieses Land ist für diesen Organisationstyp derzeit nicht freigeschaltet.",
+    "noCountries": "Für diesen Organisationstyp ist derzeit kein Land freigeschaltet."
   },
   "mfa": {
     "title": "Zwei-Faktor-Authentifizierung (TOTP)",
@@ -545,7 +548,11 @@
     "setSuspend": "Aussetzen",
     "setDisable": "Deaktivieren",
     "changed": "Status geändert — {count} Listings neu bewertet.",
-    "gateNote": "Freischaltung erfordert mindestens eine verifizierte Restlaufzeit-Regel (Schritt 13 der Länder-Recherche). Ohne verifizierte Regeln bleibt ein Land niemals handelbar."
+    "gateNote": "Freischaltung erfordert mindestens eine verifizierte Restlaufzeit-Regel (Schritt 13 der Länder-Recherche). Ohne verifizierte Regeln bleibt ein Land niemals handelbar.",
+    "scope": "Plattform-Scope",
+    "scopeSupply": "Verkäufer (Ursprung)",
+    "scopeDestination": "Käufer (Ziel)",
+    "scopeNote": "Scope = wer sich registrieren darf. Handelbarkeit bleibt unabhängig davon an verifizierte Regeln gebunden."
   },
   "recalls": {
     "title": "Rückrufe",
