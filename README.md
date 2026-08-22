@@ -78,3 +78,7 @@ Known items: `npm audit` reports 3 high findings in `sharp` bundled by Next 15.5
 ## Country scope (who may register)
 
 Two flags per country, managed by a Platform Admin under **Compliance → Länder** (`POST /api/v1/countries/:id/scope`): `isSupplyEnabled` (sellers may register) and `isDestinationEnabled` (buyers may register). Registration filters the country list by organization type and the server rejects out-of-scope combinations (`COUNTRY_NOT_SUPPORTED`). The production seed bootstraps the initial scope — **supply: DE, NL, AT, CH, IE · destination: LB** — and never overwrites the flags afterwards. Scope is a business decision and is independent of tradability: a destination country still needs verified regulatory rules before any listing becomes eligible for it.
+
+## Design system & discover page
+
+Visual language: deep-petrol brand scale, Manrope (display) + IBM Plex Sans/Mono (body, data) + IBM Plex Sans Arabic for `ar` — all **self-hosted via `@fontsource`** (no build-time Google Fonts fetch; CSP `font-src 'self'`). Tokens live in `src/app/globals.css`, primitives in `src/components/ui/`. The buyer-side **discover page** (`/app/discover`) is a search-first marketplace view: autocomplete (name/INN/manufacturer/PZN), WHO-ATC therapeutic category chips (`src/lib/med-categories.ts`), filters (sale type, price, shelf life, dosage form, storage, sort). It runs on the same eligibility-filtered query as the classic marketplace, so a buyer still only sees what may legally ship to their country, with the regulatory verdict on every card.

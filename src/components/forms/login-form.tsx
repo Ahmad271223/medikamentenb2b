@@ -53,20 +53,21 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className="space-y-4" data-testid="login-form">
       <div>
         <Label htmlFor="email">{tc('email')}</Label>
-        <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input id="email" data-testid="login-email-input" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div>
         <Label htmlFor="password">{tc('password')}</Label>
-        <Input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <Input id="password" data-testid="login-password-input" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
       {mfaNeeded ? (
         <div>
           <Label htmlFor="totp">{t('mfaCode')}</Label>
           <Input
             id="totp"
+            data-testid="login-totp-input"
             inputMode="numeric"
             pattern="\d{6}"
             maxLength={6}
@@ -76,8 +77,8 @@ export function LoginForm() {
           />
         </div>
       ) : null}
-      <FieldError>{error}</FieldError>
-      <Button type="submit" className="w-full" disabled={busy}>
+      <FieldError data-testid="login-error">{error}</FieldError>
+      <Button type="submit" className="w-full" disabled={busy} data-testid="login-submit-button">
         {busy ? tc('loading') : tc('signIn')}
       </Button>
     </form>

@@ -43,6 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       links: [
         ...(isBuyerSide
           ? [
+              { href: '/app/discover', label: t('nav.discover') },
               { href: '/app/marketplace', label: t('nav.marketplace') },
               { href: '/app/demands', label: t('nav.demands') },
             ]
@@ -97,14 +98,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col bg-brand-950 lg:flex">
-        <div className="flex h-16 items-center border-b border-brand-900 px-5">
-          <span className="text-base font-semibold tracking-tight text-white">{BRAND.name}</span>
+      <aside className="hidden w-64 shrink-0 flex-col border-e border-white/5 bg-brand-950 lg:flex">
+        <div className="flex h-16 items-center gap-2.5 border-b border-white/5 px-5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-700 font-display text-sm font-bold text-white">
+            PB
+          </span>
+          <span className="font-display text-base font-semibold tracking-tight text-white">{BRAND.name}</span>
         </div>
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
           {sections.map((section) => (
             <div key={section.label}>
-              <p className="mb-2 px-3 text-[11px] font-semibold tracking-wider text-brand-300 uppercase">
+              <p className="mb-2 px-3 text-[11px] font-semibold tracking-[0.12em] text-brand-300/70 uppercase">
                 {section.label}
               </p>
               <div className="space-y-0.5">

@@ -1,34 +1,95 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand palette — restrained petrol blue for an institutional, precise look */
-  --color-brand-50: #f0f7fa;
-  --color-brand-100: #dcecf3;
-  --color-brand-200: #bcdae8;
-  --color-brand-300: #8ec0d6;
-  --color-brand-400: #58a0bf;
-  --color-brand-500: #3884a6;
-  --color-brand-600: #2a6a8c;
-  --color-brand-700: #255873;
-  --color-brand-800: #234a60;
-  --color-brand-900: #213f52;
-  --color-brand-950: #16293a;
+  /* Brand — deep obsidian petrol / medical blue. Institutional, precise, calm. */
+  --color-brand-50: #eef6fb;
+  --color-brand-100: #d6e9f4;
+  --color-brand-200: #aed3e8;
+  --color-brand-300: #79b4d5;
+  --color-brand-400: #458fbb;
+  --color-brand-500: #2a72a0;
+  --color-brand-600: #205d86;
+  --color-brand-700: #1d4d6d;
+  --color-brand-800: #1a3f58;
+  --color-brand-900: #102f45;
+  --color-brand-950: #091f31;
 
-  /* System stack — no build-time font download; a vendored font package can
-     be swapped in later without touching components. */
-  --font-sans: ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+  /* Typography — self-hosted via @fontsource (imported in the locale layout):
+     no build-time font download, served from our own origin (CSP font-src 'self').
+     Manrope carries no Arabic glyphs; IBM Plex Sans Arabic sits in every stack
+     so the ar locale falls through to it glyph by glyph. */
+  --font-sans: 'IBM Plex Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --font-display: 'Manrope Variable', 'IBM Plex Sans', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+
+  /* Elevation — restrained, auditable depth (no muddy soft shadows). */
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.05);
+  --shadow-elevated: 0 12px 34px -14px rgb(9 31 49 / 0.28);
+  --shadow-focus: 0 0 0 4px rgb(32 93 134 / 0.14);
+
+  --animate-fade-up: fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 body {
-  background: #f8fafc; /* slate-50 */
-  color: #0f172a; /* slate-900 */
+  background: #f5f7fa;
+  color: #0f172a;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Data tables read better with aligned figures */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Arabic reads best in Plex Arabic throughout — also for display text. */
+[dir="rtl"] body,
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] .font-display {
+  font-family: 'IBM Plex Sans Arabic', var(--font-sans);
+  letter-spacing: 0;
+}
+
 .tabular-nums,
 table {
   font-variant-numeric: tabular-nums;
+}
+
+/* Fine dot-grid texture for dark hero / sidebar surfaces */
+.hero-grid {
+  background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.055) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Staggered entrance for card/list groups */
+.stagger > * { animation: var(--animate-fade-up); }
+.stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.18s; }
+.stagger > *:nth-child(5) { animation-delay: 0.24s; }
+.stagger > *:nth-child(6) { animation-delay: 0.30s; }
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; background-clip: padding-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, .stagger > * { animation: none !important; }
 }

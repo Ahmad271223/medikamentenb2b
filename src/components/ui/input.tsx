@@ -4,8 +4,8 @@ export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInp
   return (
     <input
       className={cn(
-        'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400',
-        'focus:border-brand-500 focus:outline-2 focus:outline-brand-200 disabled:bg-slate-50',
+        'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150 ease-out',
+        'focus:border-brand-500 focus:shadow-focus focus:outline-none disabled:bg-slate-50',
         className,
       )}
       {...props}
@@ -21,8 +21,8 @@ export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLS
   return (
     <select
       className={cn(
-        'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900',
-        'focus:border-brand-500 focus:outline-2 focus:outline-brand-200',
+        'h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 transition-[border-color,box-shadow] duration-150 ease-out',
+        'focus:border-brand-500 focus:shadow-focus focus:outline-none',
         className,
       )}
       {...props}
@@ -30,7 +30,17 @@ export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLS
   );
 }
 
-export function FieldError({ children }: { children?: React.ReactNode }) {
+export function FieldError({
+  children,
+  'data-testid': testId,
+}: {
+  children?: React.ReactNode;
+  'data-testid'?: string;
+}) {
   if (!children) return null;
-  return <p className="mt-1 text-sm text-red-600">{children}</p>;
+  return (
+    <p className="mt-1 text-sm text-red-600" data-testid={testId}>
+      {children}
+    </p>
+  );
 }
