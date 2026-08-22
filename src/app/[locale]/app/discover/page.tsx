@@ -4,12 +4,21 @@ import { getCurrentUser } from '@/lib/auth/current';
 import { formatMoney, formatNumber } from '@/lib/utils';
 import { diffMonthsUtc } from '@/domain/dates';
 import { searchMarketplace, type MarketplaceItem } from '@/server/marketplace-service';
-import { MED_CATEGORIES, QUICK_CATEGORY_KEYS, categoryByKey, categoryForAtc } from '@/lib/med-categories';
+import {
+  MED_CATEGORIES,
+  MED_CATEGORY_GROUPS,
+  QUICK_CATEGORY_KEYS,
+  categoriesInGroup,
+  categoryByKey,
+  categoryForAtc,
+} from '@/lib/med-categories';
 import { DiscoverSearch } from '@/components/discover-search';
 import { Badge, toneForStatus } from '@/components/ui/badge';
 import {
   Pill, Bug, ShieldPlus, Droplet, HeartPulse, Droplets, Activity, Wind, Soup, Brain,
   FlaskConical, Sparkles, Eye, Leaf, LayoutGrid, Package, MapPin, Clock, Snowflake, ArrowRight, SlidersHorizontal,
+  Biohazard, ShieldAlert, Shield, Syringe, TestTube, Filter, Beaker, CircleDot, Venus, Waves, Bone, Bandage,
+  Ribbon, HandHeart, Dna, BrainCircuit, Siren, Ear, Smile, Sun, Utensils, ScanLine,
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +33,8 @@ const MIN_SHELF_OPTIONS = [3, 6, 12, 24];
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Pill, Bug, ShieldPlus, Droplet, HeartPulse, Droplets, Activity, Wind, Soup, Brain,
   FlaskConical, Sparkles, Eye, Leaf, Package,
+  Biohazard, ShieldAlert, Shield, Syringe, TestTube, Filter, Beaker, CircleDot, Venus, Waves, Bone, Bandage,
+  Ribbon, HandHeart, Dna, BrainCircuit, Siren, Ear, Smile, Sun, Utensils, ScanLine,
 };
 
 function CatIcon({ name, className }: { name: string; className?: string }) {
@@ -207,6 +218,39 @@ function FilterForm({ sp, q, cat, sort, t, testidSuffix = '' }: { sp: SP; q?: st
   );
 }
 
+/** All categories, grouped by specialty — the "browse" entry point. */
+function CategoryGrid({ active, t }: { active?: string; t: Tr }) {
+  return (
+    <div className="space-y-6">
+      {MED_CATEGORY_GROUPS.map((group) => (
+        <div key={group}>
+          <p className="mb-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">{t(`groups.${group}`)}</p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {categoriesInGroup(group).map((c) => {
+              const isActive = active === c.key;
+              return (
+                <Link
+                  key={c.key}
+                  href={`/app/discover?cat=${c.key}`}
+                  data-testid={`discover-category-${c.key}`}
+                  className={`flex items-center gap-2.5 rounded-md border px-3 py-2.5 text-sm transition-colors duration-150 ease-out ${
+                    isActive
+                      ? 'border-brand-800 bg-brand-800 text-white'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50'
+                  }`}
+                >
+                  <CatIcon name={c.icon} className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : 'text-brand-600'}`} />
+                  <span className="truncate">{t(`categories.${c.key}`)}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function DiscoverPage({ searchParams }: { searchParams: Promise<SP> }) {
   const locale = await getLocale();
   const t = await getTranslations('discover');
@@ -223,6 +267,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
   const sortParam = s('sort');
   const sort: Sort = SORTS.includes(sortParam as Sort) ? (sortParam as Sort) : 'newest';
   const category = categoryByKey(cat);
+  const browsing = !q && !category; // landing state: show the full category grid open
 
   const result = await searchMarketplace(user.org.id, {
     q,
@@ -237,6 +282,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
   });
 
   const chips = QUICK_CATEGORY_KEYS.map(categoryByKey).filter(Boolean) as typeof MED_CATEGORIES;
+  const categoryOptions = MED_CATEGORIES.map((c) => ({ key: c.key, label: t(`categories.${c.key}`) }));
   const chipBase =
     'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors duration-150 ease-out';
 
@@ -248,7 +294,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">{t('title')}</h1>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">{t('subtitle')}</p>
           <div className="mx-auto mt-6 max-w-2xl">
-            <DiscoverSearch initialQuery={q ?? ''} />
+            <DiscoverSearch initialQuery={q ?? ''} categories={categoryOptions} />
           </div>
           <div className="mx-auto mt-5 flex max-w-4xl gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center sm:overflow-visible">
             {chips.map((c) => (
@@ -266,13 +312,13 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
                 {t(`categories.${c.key}`)}
               </Link>
             ))}
-            <Link
-              href="/app/discover"
+            <a
+              href="#categories"
               className={`${chipBase} border-slate-200 bg-white text-slate-600 hover:bg-slate-50`}
               data-testid="discover-chip-all"
             >
-              <LayoutGrid className="h-3.5 w-3.5" /> {t('allCategories')}
-            </Link>
+              <LayoutGrid className="h-3.5 w-3.5" /> {t('allCategoriesCount', { count: MED_CATEGORIES.length })}
+            </a>
           </div>
         </div>
       </section>
@@ -282,49 +328,67 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
           {tm('verifiedRequired')}
         </div>
       ) : (
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[240px_1fr]">
-          {/* Filter sidebar (desktop) */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-6">
-              <FilterForm sp={sp} q={q} cat={cat} sort={sort} t={t} />
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          {/* Browse by specialty — open while browsing, collapsed once a search or category is active */}
+          <details id="categories" open={browsing} className="group mb-8 rounded-lg border border-slate-200 bg-white shadow-card">
+            <summary
+              data-testid="discover-categories-toggle"
+              className="flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-semibold text-slate-900"
+            >
+              <span className="inline-flex items-center gap-2">
+                <LayoutGrid className="h-4 w-4 text-brand-600" /> {t('browseCategories')}
+              </span>
+              <span className="text-xs font-medium text-slate-400">{t('allCategoriesCount', { count: MED_CATEGORIES.length })}</span>
+            </summary>
+            <div className="border-t border-slate-100 px-5 py-5">
+              <CategoryGrid active={cat} t={t} />
             </div>
-          </aside>
+          </details>
 
-          {/* Results */}
-          <div>
-            {/* Mobile filter toggle */}
-            <details className="mb-4 lg:hidden">
-              <summary
-                data-testid="discover-filter-toggle"
-                className="flex cursor-pointer list-none items-center justify-center gap-2 rounded-md border border-slate-300 bg-white py-2.5 text-sm font-medium text-slate-700"
-              >
-                <SlidersHorizontal className="h-4 w-4" /> {t('filterToggle')}
-              </summary>
-              <div className="mt-3">
-                <FilterForm sp={sp} q={q} cat={cat} sort={sort} t={t} testidSuffix="-mobile" />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
+            {/* Filter sidebar (desktop) */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-6">
+                <FilterForm sp={sp} q={q} cat={cat} sort={sort} t={t} />
               </div>
-            </details>
+            </aside>
 
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm text-slate-500" data-testid="discover-result-count">
-                <span className="font-semibold text-slate-900 tabular-nums">{t('resultCount', { count: result.items.length })}</span>
-                {category ? ` · ${t(`categories.${category.key}`)}` : ''}
-                {q ? ` · „${q}“` : ''}
-              </p>
+            {/* Results */}
+            <div>
+              {/* Mobile filter toggle */}
+              <details className="mb-4 lg:hidden">
+                <summary
+                  data-testid="discover-filter-toggle"
+                  className="flex cursor-pointer list-none items-center justify-center gap-2 rounded-md border border-slate-300 bg-white py-2.5 text-sm font-medium text-slate-700"
+                >
+                  <SlidersHorizontal className="h-4 w-4" /> {t('filterToggle')}
+                </summary>
+                <div className="mt-3">
+                  <FilterForm sp={sp} q={q} cat={cat} sort={sort} t={t} testidSuffix="-mobile" />
+                </div>
+              </details>
+
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-sm text-slate-500" data-testid="discover-result-count">
+                  <span className="font-semibold text-slate-900 tabular-nums">{t('resultCount', { count: result.items.length })}</span>
+                  {category ? ` · ${t(`categories.${category.key}`)}` : ''}
+                  {q ? ` · „${q}“` : ''}
+                </p>
+              </div>
+              {result.items.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/60 p-12 text-center">
+                  <Package className="mx-auto h-8 w-8 text-slate-300" />
+                  <p className="mt-3 text-sm font-semibold text-slate-700">{t('emptyTitle')}</p>
+                  <p className="mt-1 text-xs text-slate-500">{t('emptyNote')}</p>
+                </div>
+              ) : (
+                <div className="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {result.items.map((item) => (
+                    <ProductCard key={item.id} item={item} locale={locale} t={t} tStatus={tStatus} />
+                  ))}
+                </div>
+              )}
             </div>
-            {result.items.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/60 p-12 text-center">
-                <Package className="mx-auto h-8 w-8 text-slate-300" />
-                <p className="mt-3 text-sm font-semibold text-slate-700">{t('emptyTitle')}</p>
-                <p className="mt-1 text-xs text-slate-500">{t('emptyNote')}</p>
-              </div>
-            ) : (
-              <div className="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {result.items.map((item) => (
-                  <ProductCard key={item.id} item={item} locale={locale} t={t} tStatus={tStatus} />
-                ))}
-              </div>
-            )}
           </div>
         </div>
       )}
