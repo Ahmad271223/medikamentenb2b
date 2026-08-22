@@ -22,6 +22,8 @@
 | POST `/documents` (multipart) · GET `/documents/:id/download` | vault upload/stream | document:upload/read |
 | POST `/compliance/reviews/:id/decide` | approve/reject KYB & licenses | review:decide (platform) |
 | GET `/health` | liveness/readiness | public |
+| POST `/admin/users` · POST `/admin/users/:id/platform-role` | create platform staff (one-time password, welcome reset mail) / change platform role — org members can never hold a platform role, admins cannot demote themselves | user:manage |
+| POST `/countries/:id/scope` | platform scope: who may register as seller / buyer | country:trade-enable |
 
 ## Endpoints (M2–M4 — specified)
 Listings (`/listings`, `/listings/:id/publish`, `/listings/:id/eligibility`), marketplace search (`/marketplace/search` — always eligibility-filtered by caller's org country), demands (`/demands`), matches (`/matches`), offers (`/negotiations`, `/offers`, `/offers/:id/accept|reject|counter`), transactions (`/transactions/:id/transition` — guard-checked), shipments, payments (provider webhooks under `/webhooks/payments/:provider` with signature verification).

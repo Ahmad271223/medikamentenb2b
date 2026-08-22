@@ -652,7 +652,18 @@
     "auditActor": "Actor",
     "auditWhen": "Timestamp",
     "auditEmpty": "No entries.",
-    "platformRole": "Platform role"
+    "platformRole": "Platform role",
+    "createStaffTitle": "Create platform staff",
+    "staffNote": "Staff accounts (Compliance Officer, Regulatory Analyst, Admin) belong to no trading organization — separation of duties. The one-time password is shown only now; a set-your-password link is also e-mailed if a mail server is configured.",
+    "staffLocale": "Language",
+    "createStaff": "Create account",
+    "staffCreated": "Account created for {email}. One-time password (shown only now):",
+    "staffPasswordHint": "Hand over securely. Change the password at first login and enable MFA.",
+    "errorEmailTaken": "This e-mail address is already in use.",
+    "errorSelfDemote": "You cannot remove your own admin role.",
+    "errorOrgMember": "Members of a trading organization cannot hold a platform role (separation of duties).",
+    "roleNone": "none",
+    "orgMemberNoRole": "Organization member — no platform role possible"
   },
   "settings": {
     "title": "Settings",

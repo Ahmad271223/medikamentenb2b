@@ -652,7 +652,18 @@
     "auditActor": "Akteur",
     "auditWhen": "Zeitpunkt",
     "auditEmpty": "Keine Einträge.",
-    "platformRole": "Plattform-Rolle"
+    "platformRole": "Plattform-Rolle",
+    "createStaffTitle": "Plattform-Mitarbeiter anlegen",
+    "staffNote": "Mitarbeiter-Konten (Compliance Officer, Regulatory Analyst, Admin) gehören zu keiner Handelsfirma — Gewaltenteilung. Das Einmal-Passwort wird nur jetzt angezeigt; zusätzlich geht ein Link zum Passwort-Setzen per E-Mail raus, sofern ein Mailserver konfiguriert ist.",
+    "staffLocale": "Sprache",
+    "createStaff": "Konto anlegen",
+    "staffCreated": "Konto angelegt für {email}. Einmal-Passwort (nur jetzt sichtbar):",
+    "staffPasswordHint": "Sicher übermitteln. Beim ersten Login Passwort ändern und MFA aktivieren.",
+    "errorEmailTaken": "Diese E-Mail-Adresse ist bereits vergeben.",
+    "errorSelfDemote": "Sie können Ihre eigene Admin-Rolle nicht entfernen.",
+    "errorOrgMember": "Mitglieder einer Handelsorganisation dürfen keine Plattform-Rolle erhalten (Gewaltenteilung).",
+    "roleNone": "keine",
+    "orgMemberNoRole": "Firmenmitglied — keine Plattform-Rolle möglich"
   },
   "settings": {
     "title": "Einstellungen",
